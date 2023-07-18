@@ -3,6 +3,8 @@ const sefariaAPIDomain = "www.sefaria.org"
 const sefariaAPITextPrefix = "/api/texts/"
 
 export interface BookText {
+    /** Title of the section (gemara daf, tanach chapter, etc.) */
+    title: string;
     /** Array of Hebrew verses in the chapter */
     he: string[];
     /** Array of English verses in the chapter. */
@@ -22,6 +24,7 @@ export function getBookText(book: string, chapter: string): Promise<BookText> {
 }
 
 export function getBookContents(bookSlug: string) {
+  /** Get info needed for table of contents for a book */
   const cleanedBookSlug = bookSlug.replaceAll(' ', '%20')
   const uri = `https://${sefariaAPIDomain}/api/v2/index${cleanedBookSlug}`
   return fetch(uri, {cache: "force-cache"})

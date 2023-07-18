@@ -6,10 +6,11 @@ import RenderHtml from 'react-native-render-html';
 // import {WebView} from 'react-native-webview';
 // import AutoHeightWebView from 'react-native-autoheight-webview';
 
-interface SefariaTextItemProps {
+export interface SefariaTextItemProps {
     textHE: string;
     textEN: string;
     itemNumber: number;
+    key: string;
 }
 
 const padding = 1;
