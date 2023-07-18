@@ -1,10 +1,9 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, TextInput, View, Platform } from 'react-native';
-import { AntDesign } from '@expo/vector-icons'; 
+import { StyleSheet, Text, View, StatusBar } from 'react-native';
 import { useState } from 'react';
 import { SefariaTextPage } from './SefariaTextPage';
 import { LibrarySection } from './LibrarySection';
 import { bavli } from './data/bavli';
+// import Constants from 'expo-constants';
 
 export default function App() {
   const [currentBook, setCurrentBook] = useState();
@@ -18,7 +17,6 @@ export default function App() {
             <AntDesign name="pluscircleo" size={36} color="black" onPress={() => setSize(size+1)}/>
             <AntDesign name="minuscircleo" size={36} color="black" onPress={() => setSize(size-1)}/>
         </View> */}
-        <Text>Reading {currentBook.title.en} </Text>
         <SefariaTextPage
           currentBook={currentBook}
           goToLibrary={() => setCurrentBook(null)}
@@ -42,7 +40,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 40,
+    marginTop: StatusBar.currentHeight, // or maybe from Expo: Constants.statusBarHeight,
   },
   tools: {
     flex: 1,
