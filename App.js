@@ -10,7 +10,6 @@ export default function App() {
   const [size, setSize] = useState(12);
   const textStyle = {fontSize: size};
   if (currentBook) {
-    console.debug("Reading a book", currentBook)
     return (
       <View style={styles.container}>
         {/* <View style={styles.tools}>
@@ -24,7 +23,6 @@ export default function App() {
       </View>
     )
   } else {
-    console.debug("Viewing book list")
     return (
       <View style={styles.container}>
         <Text>Here are some books!</Text>
