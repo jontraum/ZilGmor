@@ -22,8 +22,8 @@ export const bavli: BookInfo[] = [
         },
         slug: "Rosh Hashanah"
     },
-    { title: { en: "Ta'anit", }, slug: "", },
-    { title: { en: "Megillah", }, slug: "", },
+    { title: { en: "Ta'anit", }, slug: "Taanit", },
+    { title: { en: "Megillah", }, slug: "Megillah", },
     { title: { en: "Mo'ed Katan", }, slug: "Moed Katan", },
     { title: { en: "Chagigah", }, slug: "Chagigah", },
 

@@ -1,10 +1,14 @@
+import { Link, LinkMap } from "./types";
 
-const sefariaAPIDomain = "www.sefaria.org"
+const sefariaAPIDomain = "https://www.sefaria.org"
 const sefariaAPITextPrefix = "/api/texts/"
 
 export interface BookText {
     /** Title of the section (gemara daf, tanach chapter, etc.) */
     title: string;
+    heTitle: string;
+    /** how the section is referenced when fetching it */
+    sectionRef: string;
     /** Array of Hebrew verses in the chapter */
     he: string[];
     /** Array of English verses in the chapter. */
@@ -17,16 +21,35 @@ export interface BookText {
 
 export function getBookText(book: string, chapter: string): Promise<BookText> {
     const cleanedBook = book.replaceAll(' ', '_')
-    const uri = `https://${sefariaAPIDomain}${sefariaAPITextPrefix}${cleanedBook}.${chapter}`
+    const uri = `${sefariaAPIDomain}${sefariaAPITextPrefix}${cleanedBook}.${chapter}`
     return fetch(uri, {cache: "force-cache"})
     .then(response => response.json())
+    .catch(err => console.warn("Error when trying to fetch", err))
+}
+
+export function GetLinks(ref: string): Promise<void | LinkMap> {
+  const uri = `${sefariaAPIDomain}/api/links/${ref}?with_text=1`
+  return fetch(uri, {cache: "force-cache"})
+    .then(response => response.json())
+    .then( (links: Link[]) => {
+      const linkMap: LinkMap = new Map() as LinkMap
+      links.forEach( (link: Link) => {
+        let currentList: Link[] = linkMap.get(link.collectiveTitle.en)
+        if (!currentList) {
+          currentList = []
+          linkMap.set(link.collectiveTitle.en, currentList)
+        }
+        currentList.push(link)
+      })
+      return linkMap
+    })
     .catch(err => console.warn("Error when trying to fetch", err))
 }
 
 export function getBookContents(bookSlug: string) {
   /** Get info needed for table of contents for a book */
   const cleanedBookSlug = bookSlug.replaceAll(' ', '%20')
-  const uri = `https://${sefariaAPIDomain}/api/v2/index${cleanedBookSlug}`
+  const uri = `${sefariaAPIDomain}/api/v2/index${cleanedBookSlug}`
   return fetch(uri, {cache: "force-cache"})
   .then(response => response.json())
   .catch(err => console.warn("Error when trying to fetch book contents ", cleanedBookSlug, err))

@@ -11,6 +11,7 @@ export interface SefariaTextItemProps {
     textEN: string;
     itemNumber: number;
     key: string;
+    selected?: boolean;
 }
 
 const padding = 1;
@@ -29,12 +30,17 @@ const styles = StyleSheet.create({
     },
     wvContainer: {
         fontSize: 30
+    },
+    selected: {
+        borderWidth: 2,
+        backgroundColor: "#c7e2e2",
+        borderColor: "#28f",
     }
 });
 
-export function SefariaTextItem({textHE, textEN}: SefariaTextItemProps) {
+export function SefariaTextItem({textHE, textEN, selected=false}: SefariaTextItemProps) {
     return (
-        <View style={styles.container}>
+        <View style={selected ? [styles.container, styles.selected] : styles.container}>
             <RenderHtml contentWidth={styles.textView.width} source={{html: textHE}} />
             <RenderHtml contentWidth={styles.textView.width} source={{html: textEN}} />
             {/* <AutoHeightWebView style={styles.textView} source={{html: textHE, baseUrl: "http://sefaria.org/"}} originWhitelist={['*']} />
