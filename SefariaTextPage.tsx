@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { ScrollView, SectionList, Text, View } from "react-native";
-import { Ionicons } from '@expo/vector-icons'; 
+import React, { useEffect, useState } from 'react'
+import { SectionList, Text, View } from 'react-native'
+import { Ionicons } from '@expo/vector-icons' 
 
-import { SefariaTextItem, SefariaTextItemProps } from './SefariaTextItem';
-import { BookText, getBookText } from './data/bookAPI';
-import { BookInfo } from './data/types';
-import { Commentary } from './Commentary';
-
-const nullResult = {he: ['לא מצא תקסט'], text: ["No text found"]}
+import { SefariaTextItem, SefariaTextItemProps } from './SefariaTextItem'
+import { BookText, getBookText } from './data/bookAPI'
+import { BookInfo } from './data/types'
+import { Commentary } from './Commentary'
 
 interface SefariaTextPageProps {
   currentBook: BookInfo;
@@ -18,14 +16,13 @@ interface ListSectionContent {
   title: string;
   heTitle: string;
   key: string;
-  next: string;
+  next: string | null;
   data: SefariaTextItemProps[];
 }
 
 function textSectionToListSection(section: BookText): ListSectionContent {
   // Sefaria book names can have spaces in them, and they are replaced with underlines when fetching
   // But the space between the book name and the chapter or amud identifier is replaced with a dot!
-  const sectionRef = section.sectionRef.replace(/\s(?=\S+$)/, ".").replace(" ", "_")
   return {
     title: section.title,
     heTitle: section.heTitle,
@@ -43,13 +40,13 @@ function textSectionToListSection(section: BookText): ListSectionContent {
 }
 
 export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps) {
-  const [sections, setSections] = useState([])
+  const [sections, setSections] = useState<ListSectionContent[]>([])
   const [currentItem, setCurrentItem] = useState<SefariaTextItemProps | null>()
   useEffect(() => {
     // On initial load, load up the first page and set the first item as current.
     // ToDo: parameter of where we should start (from previous reading, or TOC) instead of always
     //       at the beginning.
-    getBookText(currentBook.slug, "2a").then(result => {
+    getBookText(currentBook.slug, '2a').then(result => {
       if (result) {
         const section = textSectionToListSection(result)
         setSections([section])
@@ -61,11 +58,11 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
   const appendNextSection = () => {
     const lastSection = sections.at(-1)
     if(!lastSection) {
-      console.warn("Could not find last current section!", currentBook)
+      console.warn('Could not find last current section!', currentBook)
       return
     }
     if (!lastSection.next) {
-      console.info("No next section found in current section", lastSection)
+      console.info('No next section found in current section', lastSection)
       return
     }
     const bookparts = lastSection.next.split(' ')
@@ -80,28 +77,28 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
 
   return (
     <View style={{flexDirection: 'column'}}>
-      <View style={{height: 50, flex: 0.1, flexDirection:'row', justifyContent: 'space-between', margin: 5,}}>
+      <View style={{height: 50, flex: 0.1, flexDirection:'row', justifyContent: 'space-between', margin: 5}}>
         <Ionicons name="library" size={24} color="black" onPress={goToLibrary} />
         <Text style={{fontWeight: 'bold', fontSize:24}}>{currentBook.title.he || currentBook.title.en}</Text>
         <Text></Text>
       </View>
       <SectionList
-        style={{flex: 10, marginBottom: 2,}}
+        style={{flex: 10, marginBottom: 2}}
         sections={sections}
         renderItem={ ({item}) => (
           <SefariaTextItem selected={item.key === currentItem?.key} {...item} />
         )}
         renderSectionHeader={({section}) => {
           return (
-          <View style={{flexDirection: "row", justifyContent: "space-between"}}>
-            <Text style={{fontWeight: "bold", fontSize: 18,}}>{(section).title}</Text>
-            <Text style={{fontWeight: "bold", fontSize: 18,}}>{(section).heTitle}</Text>
-          </View>
-        )}}
+            <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+              <Text style={{fontWeight: 'bold', fontSize: 18}}>{(section).title}</Text>
+              <Text style={{fontWeight: 'bold', fontSize: 18}}>{(section).heTitle}</Text>
+            </View>
+          )}}
         onEndReached={appendNextSection}
         onEndReachedThreshold={1.5}
         viewabilityConfig={{itemVisiblePercentThreshold: 90}}
-        onViewableItemsChanged={({viewableItems, changed} ) => {
+        onViewableItemsChanged={({viewableItems} ) => {
           setCurrentItem(viewableItems[0].item)
         }}
       />
