@@ -1,4 +1,4 @@
-import { Link, LinkMap } from './types'
+import { BookIndex, Link, LinkMap } from './types'
 
 const sefariaAPIDomain = 'https://www.sefaria.org'
 const sefariaAPITextPrefix = '/api/texts/'
@@ -46,10 +46,10 @@ export function GetLinks(ref: string): Promise<void | LinkMap> {
     .catch(err => console.warn('Error when trying to fetch', err))
 }
 
-export function getBookContents(bookSlug: string) {
+export function getBookContents(bookSlug: string): Promise<BookIndex | null> {
   /** Get info needed for table of contents for a book */
   const cleanedBookSlug = bookSlug.replaceAll(' ', '%20')
-  const uri = `${sefariaAPIDomain}/api/v2/index${cleanedBookSlug}`
+  const uri = `${sefariaAPIDomain}/api/v2/index/${cleanedBookSlug}`
   return fetch(uri, {cache: 'force-cache'})
     .then(response => response.json())
     .catch(err => console.warn('Error when trying to fetch book contents ', cleanedBookSlug, err))

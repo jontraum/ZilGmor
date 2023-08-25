@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react'
-import { SectionList, Text, View } from 'react-native'
-import { Ionicons } from '@expo/vector-icons' 
+import React, { useEffect, useRef, useState } from 'react'
+import { Modal, SectionList, Text, View } from 'react-native'
+import { Ionicons, MaterialIcons } from '@expo/vector-icons' 
 
 import { SefariaTextItem, SefariaTextItemProps } from './SefariaTextItem'
 import { BookText, getBookText } from './data/bookAPI'
 import { BookInfo } from './data/types'
 import { Commentary } from './Commentary'
+import { BookContents } from './BookContents'
 
 interface SefariaTextPageProps {
   currentBook: BookInfo;
@@ -42,10 +43,14 @@ function textSectionToListSection(section: BookText): ListSectionContent {
 export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps) {
   const [sections, setSections] = useState<ListSectionContent[]>([])
   const [currentItem, setCurrentItem] = useState<SefariaTextItemProps | null>()
+  const [showTOC, setShowTOC] = useState<boolean>(false)
+  const contentListRef = useRef<null | SectionList>()
+  
   useEffect(() => {
     // On initial load, load up the first page and set the first item as current.
     // ToDo: parameter of where we should start (from previous reading, or TOC) instead of always
     //       at the beginning.
+    //       Probably want to use JumpToLocation
     getBookText(currentBook.slug, '2a').then(result => {
       if (result) {
         const section = textSectionToListSection(result)
@@ -75,16 +80,42 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
     })
   }
 
+  const jumpToLocation = (location: string) => {
+    getBookText(currentBook.slug, location).then((result) => {
+      const section = textSectionToListSection(result)
+      setSections([section])
+      setCurrentItem(section.data[0])
+      if (contentListRef) {
+        contentListRef.current?.scrollToLocation({
+          animated: false,
+          itemIndex: 0,
+          sectionIndex: 0,
+          viewPosition: 0,
+        })
+      }
+    })
+  }
+
+  const contentsJumpAndClose = (location: string) => {
+    console.debug('jump to ', location)
+    jumpToLocation(location)
+    setShowTOC(false)
+  }
+
   return (
     <View style={{flexDirection: 'column'}}>
       <View style={{height: 50, flex: 0.1, flexDirection:'row', justifyContent: 'space-between', margin: 5}}>
         <Ionicons name="library" size={24} color="black" onPress={goToLibrary} />
         <Text style={{fontWeight: 'bold', fontSize:24}}>{currentBook.title.he || currentBook.title.en}</Text>
-        <Text></Text>
+        <MaterialIcons name="toc" size={24} color="black" onPress={() => setShowTOC(true)} />
       </View>
+      <Modal visible={showTOC} onRequestClose={() => setShowTOC(false)}>
+        <BookContents bookInfo={currentBook} jumpAndClose={contentsJumpAndClose} />
+      </Modal>
       <SectionList
         style={{flex: 10, marginBottom: 2}}
         sections={sections}
+        ref={contentListRef}
         renderItem={ ({item}) => (
           <SefariaTextItem selected={item.key === currentItem?.key} {...item} />
         )}
@@ -99,7 +130,16 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
         onEndReachedThreshold={1.5}
         viewabilityConfig={{itemVisiblePercentThreshold: 90}}
         onViewableItemsChanged={({viewableItems} ) => {
-          setCurrentItem(viewableItems[0].item)
+          if (viewableItems && viewableItems[0]?.item) {
+            const item = viewableItems[0].item
+            if (item.textEN || item.textHE) {
+              // ignore section headers - only set if it is a text node
+              setCurrentItem(viewableItems[0].item)
+            }
+            else if (viewableItems[1]) {
+              setCurrentItem(viewableItems[1].item)
+            }
+          }
         }}
       />
       {currentItem && 

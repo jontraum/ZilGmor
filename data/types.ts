@@ -40,3 +40,44 @@ export interface Link {
 }
 
 export type LinkMap = Map<string, Link[]>
+
+// *******************************************************************************************************
+// Book index and its related types.  Limiting to just what we are using, rather than all the fields Sefaria provides.
+// *******************************************************************************************************
+
+//** Useful in generating a table of contents, though BookIndexAlts might be preferable if it exists */
+export interface BookIndexSchema {
+    /** First element in sectionNames might be "Chapter". TOC can use this for a heading */
+    sectionNames: string[];
+    /** length of _lengths_ corresponds with length of _sectionNames_.
+     * If sectionNames[0] is 'Chapter', then lengths[0] will be the total number of chapters.
+     */
+    lengths: number[];
+}
+
+/** An individual unit (commonly, a chapter for Gemara, or a parasha for Chumash) and references to its contents */
+export interface BookIndexNode {
+    /** Primary title in English. E.g. "Chapter 2" [for Gemara]. "Lech Lecha" [for Chumash] */
+    title: string;
+    /** primary title in Hebrew */
+    heTitle: string;
+    /** A list of text references. 
+     * For Gemara, each one is an amud (or at the beginning or end of a chapter, a specified part of an amud). 
+     * For Chumash, each is a range of chapters and verses for an aliya
+    */
+    refs: string[]
+}
+
+interface BookIndexAlts {
+    [unitName: string]: {
+        nodes: BookIndexNode[];
+    }
+}
+
+export interface BookIndex {
+    title: string;
+    heTitle: string;
+    schema: BookIndexSchema;
+    alts?: BookIndexAlts;
+}
+
