@@ -6,7 +6,8 @@ import { Link, LinkMap } from './data/types'
 import { GetLinks } from './data/bookAPI'
 
 interface CommentaryProps {
-    verseKey: string
+    verseKey: string;
+    bookLinks: string[];
 }
 
 const styles = StyleSheet.create({
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
 
 const rashi = {'en': 'Rashi', 'he': 'רש"י'}
 
-export function Commentary({verseKey}: CommentaryProps) {
+export function Commentary({verseKey, bookLinks}: CommentaryProps) {
   const [linkMap, setLinkMap] = useState<LinkMap>()
   // Temporarily defaulting commentary to Rashi.
   const [currentCommentary, setCurrentCommentary] = useState<string>(rashi.en)
@@ -122,7 +123,7 @@ export function Commentary({verseKey}: CommentaryProps) {
         <ScrollView>
           <Text>Add commentary</Text>
           <View style={styles.linkSelectorBox}>
-            { linkMap  && Array.from(linkMap.keys()).map( (linkName, idx) => {
+            { bookLinks.map( (linkName, idx) => {
               if (selectedCommentaries.includes(linkName)) {
                 return (
                   <Pressable key={idx} onPress={() => unselectLink(linkName)}>
@@ -161,8 +162,11 @@ export function Commentary({verseKey}: CommentaryProps) {
       </View>
       <ScrollView style={styles.linkPane}>
         {currentLinks.map( (linkItem, idx) => {
+          // ToDo: Currently only shows Hebrew text.  Add ability to show English as well or instead.
+          // If we are showing both, and there are multiple verses, should probably intersperse them.
+          const linkText = typeof(linkItem.he) === 'string' ? linkItem.he : linkItem.he.join(' ')
           return (
-            <RenderHtml contentWidth={dimensions.width - 4} key={idx} source={{html: linkItem.he}} />
+            <RenderHtml contentWidth={dimensions.width - 4} key={idx} source={{html: linkText}} />
           )
         })}
 

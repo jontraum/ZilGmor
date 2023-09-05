@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Modal, SectionList, Text, View } from 'react-native'
 import { Ionicons, MaterialIcons } from '@expo/vector-icons' 
 
 import { SefariaTextItem, SefariaTextItemProps } from './SefariaTextItem'
-import { BookText, getBookText } from './data/bookAPI'
+import { BookText, getBookText, getNamesOfLinksForBook } from './data/bookAPI'
 import { BookInfo } from './data/types'
 import { Commentary } from './Commentary'
 import { BookContents } from './BookContents'
@@ -44,30 +44,52 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
   const [sections, setSections] = useState<ListSectionContent[]>([])
   const [currentItem, setCurrentItem] = useState<SefariaTextItemProps | null>()
   const [showTOC, setShowTOC] = useState<boolean>(false)
+  const [availableLinks, setAvailableLinks] = useState<Array<string>>([])
   const contentListRef = useRef<null | SectionList>()
   
+  const addLinkNames = (book: string, chapter: string) => {
+    getNamesOfLinksForBook(book, chapter)
+      .then( linkNames => {
+        if (!linkNames) {
+          return
+        }
+        const newValues = []
+        for (const linkName of linkNames) {
+          if (!availableLinks.includes(linkName)) {
+            newValues.push(linkName)
+          }
+        }
+        if (newValues.length > 0) {
+          setAvailableLinks([...availableLinks, ...newValues])
+        }
+      })
+  }
+
   useEffect(() => {
     // On initial load, load up the first page and set the first item as current.
     // ToDo: parameter of where we should start (from previous reading, or TOC) instead of always
-    //       at the beginning.
+    //       at the beginning. Or maybe load it from book history once that is implemented.
     //       Probably want to use JumpToLocation
-    getBookText(currentBook.slug, '2a').then(result => {
+    const startingPage = '2a'
+    getBookText(currentBook.slug, startingPage).then(result => {
       if (result) {
         const section = textSectionToListSection(result)
         setSections([section])
         setCurrentItem(section.data[0])
       }
     })
+    addLinkNames(currentBook.slug, startingPage)
   }, [] )
 
-  const appendNextSection = () => {
+  const appendNextSection = useCallback(() => {
     const lastSection = sections.at(-1)
     if(!lastSection) {
       console.warn('Could not find last current section!', currentBook)
       return
     }
     if (!lastSection.next) {
-      console.info('No next section found in current section', lastSection)
+      // if there's no next, probably just means we are at the end of the book.
+      console.debug('No next section found in current section', lastSection)
       return
     }
     const bookparts = lastSection.next.split(' ')
@@ -78,9 +100,11 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
         setSections([...sections, textSectionToListSection(result)])
       }
     })
-  }
+    addLinkNames(bookname, chapter)
+  }, [sections])
 
   const jumpToLocation = (location: string) => {
+    // ToDo: Put up spinner which will get cleared when promise completes.
     getBookText(currentBook.slug, location).then((result) => {
       const section = textSectionToListSection(result)
       setSections([section])
@@ -135,6 +159,7 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
             if (item.textEN || item.textHE) {
               // ignore section headers - only set if it is a text node
               setCurrentItem(viewableItems[0].item)
+              console.log('section is ', viewableItems[0]?.section.title)
             }
             else if (viewableItems[1]) {
               setCurrentItem(viewableItems[1].item)
@@ -143,7 +168,7 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
         }}
       />
       {currentItem && 
-        <Commentary verseKey={currentItem.key}/>
+        <Commentary verseKey={currentItem.key} bookLinks={availableLinks}/>
       }
 
     </View>

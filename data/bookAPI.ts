@@ -2,13 +2,18 @@ import { BookIndex, Link, LinkMap } from './types'
 
 const sefariaAPIDomain = 'https://www.sefaria.org'
 const sefariaAPITextPrefix = '/api/texts/'
+const sefariaAPILinkPrefix = '/api/links/'
 
 export interface BookText {
     /** Title of the section (gemara daf, tanach chapter, etc.) */
     title: string;
     heTitle: string;
-    /** how the section is referenced when fetching it */
+    /** how the section is referenced when fetching it. Format is something like "title.section" */
     sectionRef: string;
+    /** Section identifier without the book title. Could be chapter number in most cases, but for Gemara it's the Amud (e.g. '13a')
+     * It is an array because in theory we could have requested multiple chapters/amudim/section in one request.
+     */
+    sections: Array<string | number>;
     /** Array of Hebrew verses in the chapter */
     he: string[];
     /** Array of English verses in the chapter. */
@@ -27,17 +32,46 @@ export function getBookText(book: string, chapter: string): Promise<BookText> {
     .catch(err => console.warn('Error when trying to fetch', err))
 }
 
+function getLinkLabel(link: Link): string {
+  /** Get the label/heading under which we group the link.
+   * Commentaries are grouped by the individual commentator (Rashi, Tosafos, etc)
+   * Other types of links, like quotes from Tanach, Talmud, etc are grouped by link category
+   */
+  return link.category === 'Commentary' ? link.collectiveTitle.en : link.category
+}
+
+export function getNamesOfLinksForBook(book: string, chapter: string): Promise<void | Set<string>> {
+  /** Get a promise that will return a set of names of commentaries/links that will be able to use when studying this
+   *  chapter of the book. Used in constructing a selector for users to select which commentaries or links they want
+   *  to use when learning this book
+   */
+  const cleanedBook = book.replaceAll(' ', '_')
+  // The link API gives us far more info than we need for this purpose, but there doesn't seem to be a good alternative now.
+  const uri = `${sefariaAPIDomain}${sefariaAPILinkPrefix}${cleanedBook}.${chapter}?with_text=0`
+  return fetch(uri, {cache: 'force-cache'})
+    .then(response => response.json())
+    .then( (resp_json: Array<object>) => {
+      const links = new Set<string>
+      resp_json.forEach(link => {
+        const label: string = getLinkLabel(link as Link)
+        links.add(label)
+      })
+      return links
+    })
+}
+
 export function GetLinks(ref: string): Promise<void | LinkMap> {
-  const uri = `${sefariaAPIDomain}/api/links/${ref}?with_text=1`
+  const uri = `${sefariaAPIDomain}${sefariaAPILinkPrefix}${ref}?with_text=1`
   return fetch(uri, {cache: 'force-cache'})
     .then(response => response.json())
     .then( (links: Link[]) => {
       const linkMap: LinkMap = new Map() as LinkMap
       links.forEach( (link: Link) => {
-        let currentList = linkMap.get(link.collectiveTitle.en)
+        const label = getLinkLabel(link)
+        let currentList = linkMap.get(label)
         if (!currentList) {
           currentList = []
-          linkMap.set(link.collectiveTitle.en, currentList)
+          linkMap.set(label, currentList)
         }
         currentList.push(link)
       })
