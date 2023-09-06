@@ -11,7 +11,6 @@ export const bavli: BookInfo[] = [
   },
   { title: { en: 'Eruvin' }, slug: 'Eruvin' },
   { title: { en: 'Pesachim' }, slug: 'Pesachim' },
-  { title: { en: 'Shekalim' }, slug: 'Shekalim' },
   { title: { en: 'Yoma' }, slug: 'Yoma' },
   { title: { en: 'Sukkah' }, slug: 'Sukkah' },
   { title: { en: 'Beitza' }, slug: 'Beitza' },

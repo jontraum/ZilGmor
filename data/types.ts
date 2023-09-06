@@ -24,16 +24,16 @@ export interface Link {
     commentaryNum: number; // 1.0001,
     // compDate: number;
     // errorMargin: number;
-    /** Text of the link, in Hebrew */
-    he: string; // "<b>וכאשר יענו אתו.</b> בכל מה שהם נותנין לב לענות, כן לב הקדוש ברוך הוא להרבות ולהפריץ: "
+    /** Text of the link, in Hebrew. If multiple verses are selected, will be an array instead of a string. */
+    he: string | string[]; // "<b>וכאשר יענו אתו.</b> בכל מה שהם נותנין לב לענות, כן לב הקדוש ברוך הוא להרבות ולהפריץ: "
     heTitle: string; // "רש\"י על שמות",
     // "heVersionTitle": "Vilna Edition",
     // "heLicense": "Public Domain",
     // "heVersionTitleInHebrew": "מהדורת וילנא",
     ref: string; //"Rashi on Exodus 1.12.1",
     sourceRef: string; // "Rashi on Exodus 1:12:1",
-    /** Text of the link, in English */
-    text: string; // "In any way in which they deigned to oppress, that was where the heart of the Holy Blessed One [saw fit to] increase and spread out.",
+    /** Text of the link, in English. If multiple verses are selected, will be an array instead of a string. */
+    text: string | string[]; // "In any way in which they deigned to oppress, that was where the heart of the Holy Blessed One [saw fit to] increase and spread out.",
     // "_id": string; // "5234a6adedbab465c9549b14",
      /** Seems like "type" might have been replaced by "category". Type is often blank, and sometimes "commentary" */
     type: string;
