@@ -3,7 +3,7 @@ import { Modal, SectionList, Text, View } from 'react-native'
 import { Ionicons, MaterialIcons } from '@expo/vector-icons' 
 
 import { SefariaTextItem, SefariaTextItemProps } from './SefariaTextItem'
-import { BookText, getBookText, getNamesOfLinksForBook } from './data/bookAPI'
+import { BookText, getBookText, getNamesOfLinksForBook, splitBookRef } from './data/bookAPI'
 import { BookInfo } from './data/types'
 import { Commentary } from './Commentary'
 import { BookContents } from './BookContents'
@@ -18,6 +18,7 @@ interface ListSectionContent {
   heTitle: string;
   key: string;
   next: string | null;
+  prev: string | null;
   data: SefariaTextItemProps[];
 }
 
@@ -29,6 +30,7 @@ function textSectionToListSection(section: BookText): ListSectionContent {
     heTitle: section.heTitle,
     key: section.title,
     next: section.next,
+    prev: section.prev,
     data: section.he.map( (elementHE, idx): SefariaTextItemProps => {
       return {
         textHE: elementHE,
@@ -45,6 +47,7 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
   const [currentItem, setCurrentItem] = useState<SefariaTextItemProps | null>()
   const [showTOC, setShowTOC] = useState<boolean>(false)
   const [availableLinks, setAvailableLinks] = useState<Array<string>>([])
+  const [loadingPrevious, setLoadingPrevious] = useState(false)
   const contentListRef = useRef<null | SectionList>()
   
   const addLinkNames = (book: string, chapter: string) => {
@@ -92,16 +95,14 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
       console.debug('No next section found in current section', lastSection)
       return
     }
-    const bookparts = lastSection.next.split(' ')
-    const chapter = bookparts.pop()
-    const bookname = bookparts.join(' ')
+    const {bookname, chapter} = splitBookRef(lastSection.next)
     getBookText(bookname, chapter).then( (result) => {
       if (result) {
         setSections([...sections, textSectionToListSection(result)])
       }
     })
     addLinkNames(bookname, chapter)
-  }, [sections])
+  }, [sections, setSections])
 
   const jumpToLocation = (location: string) => {
     // ToDo: Put up spinner which will get cleared when promise completes.
@@ -126,11 +127,53 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
     setShowTOC(false)
   }
 
+  const loadPrevious = useCallback(() => {
+    const prev = sections[0]?.prev
+    if (!prev) {
+      console.info('no previous section')
+      return
+    }
+    setLoadingPrevious(true)
+    const {bookname, chapter} = splitBookRef(prev)
+    getBookText(bookname, chapter).then( (result) => {
+      if (result) {
+        setSections([textSectionToListSection(result), ...sections])
+        // When this callback was called, we must have been at the zeroth item of the zeroth section.
+        // Now that we've prepended a new section, we want to be where we were before, which is now
+        // the zeroth item of the 1st section.
+        contentListRef.current?.scrollToLocation({
+          animated: false,
+          itemIndex: 0,
+          sectionIndex: 1,
+          viewPosition: 0,
+        })
+      }
+      else {
+        console.warn('No result when loading previous section')
+      }
+      setLoadingPrevious(false)
+    })
+  }, [sections, setSections, setLoadingPrevious])
+
+  const onScrollToIndexFailed = (failInfo: {index: number, averageItemLength: number}) => {
+    console.debug('onScrollToIndexFailed, ', failInfo)
+    // FixMe: If we were using a FlatList, the commented code below would be the usual way
+    // of dealing with this.  But at least as the typescript interfaces are defined, there is
+    // no scrollToOffset method in SectionList, and not sure how to figure out where to go for
+    // scrollToLocation.  Maybe we can coerce to VirtualizedList and use scrollToOffset anyway?
+    // Or maybe we can assume (as is the case for now) to just go to the bottom of the first
+    // section, since that's currently the main use case where we might run into scrollToIndex failing,
+    // when someone is currently at the top of the window and loading previous content.
+    // Or maybe we can do something with the currentItem and a useEffect? TBD
+    // const offset = failInfo.averageItemLength * failInfo.index
+    // contentListRef.current?.scrollToOffset(offset)
+  } 
+
   return (
     <View style={{flexDirection: 'column'}}>
       <View style={{height: 50, flex: 0.1, flexDirection:'row', justifyContent: 'space-between', margin: 5}}>
         <Ionicons name="library" size={24} color="black" onPress={goToLibrary} />
-        <Text style={{fontWeight: 'bold', fontSize:24}}>{currentBook.title.he || currentBook.title.en}</Text>
+        <Text style={{fontWeight: 'bold', fontSize:24}}>{currentItem?.key}</Text>
         <MaterialIcons name="toc" size={24} color="black" onPress={() => setShowTOC(true)} />
       </View>
       <Modal visible={showTOC} onRequestClose={() => setShowTOC(false)}>
@@ -152,6 +195,9 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
           )}}
         onEndReached={appendNextSection}
         onEndReachedThreshold={1.5}
+        onRefresh={loadPrevious}
+        onScrollToIndexFailed={onScrollToIndexFailed}
+        refreshing={loadingPrevious}
         viewabilityConfig={{itemVisiblePercentThreshold: 90}}
         onViewableItemsChanged={({viewableItems} ) => {
           if (viewableItems && viewableItems[0]?.item) {
@@ -159,7 +205,6 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
             if (item.textEN || item.textHE) {
               // ignore section headers - only set if it is a text node
               setCurrentItem(viewableItems[0].item)
-              console.log('section is ', viewableItems[0]?.section.title)
             }
             else if (viewableItems[1]) {
               setCurrentItem(viewableItems[1].item)

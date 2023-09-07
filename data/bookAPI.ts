@@ -32,6 +32,18 @@ export function getBookText(book: string, chapter: string): Promise<BookText> {
     .catch(err => console.warn('Error when trying to fetch', err))
 }
 
+export function splitBookRef(ref:string) {
+  /** Sefaria's API gives next/prev references for the next thing to load, but you cannot just
+   * use that reference as-is because of the way book components are separated by spaces, and
+   * the way you have to treat spaces differently depending on whether they are within the
+   * name of the book (e.g. 'Rosh Hashana') or are separaters between components.
+   */
+  const bookparts = ref.split(' ')
+  const chapter = bookparts.pop()
+  const bookname = bookparts.join(' ')
+  return{bookname, chapter}
+}
+
 function getLinkLabel(link: Link): string {
   /** Get the label/heading under which we group the link.
    * Commentaries are grouped by the individual commentator (Rashi, Tosafos, etc)

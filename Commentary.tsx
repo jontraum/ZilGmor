@@ -109,7 +109,6 @@ export function Commentary({verseKey, bookLinks}: CommentaryProps) {
   if (linkMap && currentCommentary) {
     currentLinks = linkMap.get(currentCommentary)
     if (!currentLinks) {
-      console.info('no commentary available for ', currentCommentary)
       currentLinks = []
     }
   }
