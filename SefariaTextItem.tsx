@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     padding,
+    fontSize: 20,
   },
   textView: {
     flex: 1,
@@ -36,13 +37,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#c7e2e2',
     borderColor: '#28f',
   },
+  english: {
+    fontSize: 14,
+    fontFamily: 'serif',
+  },
+  hebrew: {
+    fontSize: 18,
+    fontFamily: 'serif',
+  },
 })
 
 export function SefariaTextItem ({ textHE, textEN, selected = false }: SefariaTextItemProps) {
   return (
     <View style={selected ? [styles.container, styles.selected] : styles.container}>
-      <RenderHtml contentWidth={styles.textView.width} source={{ html: textHE }} />
-      <RenderHtml contentWidth={styles.textView.width} source={{ html: textEN }} />
+      <RenderHtml baseStyle={styles.hebrew} contentWidth={styles.textView.width} source={{ html: textHE }} />
+      <RenderHtml baseStyle={styles.english} contentWidth={styles.textView.width} source={{ html: textEN }} />
       {/* <AutoHeightWebView style={styles.textView} source={{html: textHE, baseUrl: "http://sefaria.org/"}} originWhitelist={['*']} />
             <AutoHeightWebView textZoom={100} style={styles.textView} source={{html: textEN, baseUrl: "http://sefaria.org/"}} originWhitelist={['*']} /> */}
     </View>

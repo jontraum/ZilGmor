@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
+import { Dimensions, Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import RenderHtml from 'react-native-render-html'
 import { Link, LinkMap } from './data/types'
@@ -39,7 +39,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderColor: '#ccccdd',
     flexDirection: 'row',
-    height: 30,
+    flexWrap: 'wrap',
+    width: Dimensions.get('window').width - 2,
   },
   showLink: {
     borderStyle: 'solid',
@@ -60,6 +61,11 @@ const styles = StyleSheet.create({
   linkPane: {
     flex: 16,
     padding: 3,
+    width: Dimensions.get('window').width - 2,
+  },
+  hebrewText: {
+    fontFamily: 'serif',
+    fontSize: 18,
   },
 })
 
@@ -165,7 +171,7 @@ export function Commentary({verseKey, bookLinks}: CommentaryProps) {
           // If we are showing both, and there are multiple verses, should probably intersperse them.
           const linkText = typeof(linkItem.he) === 'string' ? linkItem.he : linkItem.he.join(' ')
           return (
-            <RenderHtml contentWidth={dimensions.width - 4} key={idx} source={{html: linkText}} />
+            <RenderHtml baseStyle={styles.hebrewText} contentWidth={dimensions.width - 4} key={idx} source={{html: linkText}} />
           )
         })}
 
