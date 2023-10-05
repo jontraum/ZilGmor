@@ -1,14 +1,21 @@
 import { StyleSheet, Text, View, StatusBar } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { SefariaTextPage } from './SefariaTextPage'
 import { LibrarySection } from './LibrarySection'
 import { bavli } from './data/bavli'
+import { initializeDB } from './data/settings'
 // import Constants from 'expo-constants';
 
 export default function App () {
   const [currentBook, setCurrentBook] = useState()
   //const [size, setSize] = useState(12)
   //const textStyle = { fontSize: size }
+
+  // On initial load of app, initialize the DB.
+  useEffect(() => {
+    initializeDB()
+  }, [])
+
   if (currentBook) {
     return (
       <View style={styles.container}>

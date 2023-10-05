@@ -7,6 +7,7 @@ import { BookText, getBookText, getNamesOfLinksForBook, splitBookRef } from './d
 import { BookInfo } from './data/types'
 import { Commentary } from './Commentary'
 import { BookContents } from './BookContents'
+import { getBookSettings, saveBookSettings } from './data/settings'
 
 interface SefariaTextPageProps {
   currentBook: BookInfo;
@@ -36,7 +37,7 @@ function textSectionToListSection(section: BookText): ListSectionContent {
         textHE: elementHE,
         textEN: section.text[idx],
         itemNumber: idx,
-        key: `${section.sectionRef}.${(1 + idx).toString()}`,
+        key: `${section.sectionRef}:${(1 + idx).toString()}`,
       }
     }),
   }
@@ -48,6 +49,8 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
   const [showTOC, setShowTOC] = useState<boolean>(false)
   const [availableLinks, setAvailableLinks] = useState<Array<string>>([])
   const [loadingPrevious, setLoadingPrevious] = useState(false)
+  // Commentaries that the user selects, stored in local state, and saved to settings via a UseEffect
+  const [selectedCommentaries, setSelectedCommentaries] = useState<string[]>([])
   const contentListRef = useRef<null | SectionList>()
   
   const addLinkNames = (book: string, chapter: string) => {
@@ -70,18 +73,15 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
 
   useEffect(() => {
     // On initial load, load up the first page and set the first item as current.
-    // ToDo: parameter of where we should start (from previous reading, or TOC) instead of always
-    //       at the beginning. Or maybe load it from book history once that is implemented.
-    //       Probably want to use JumpToLocation
-    const startingPage = '2a'
-    getBookText(currentBook.slug, startingPage).then(result => {
-      if (result) {
-        const section = textSectionToListSection(result)
-        setSections([section])
-        setCurrentItem(section.data[0])
-      }
-    })
-    addLinkNames(currentBook.slug, startingPage)
+    let startingPage = '2a' // ToDo: better logic for default start. 2a works for Gemara, probably not much else.
+    getBookSettings(currentBook.slug)
+      .then((settings) => {
+        if (settings) {
+          startingPage = settings.location
+          setSelectedCommentaries(settings.commentaries)
+        }
+        jumpToLocation(startingPage)
+      })
   }, [] )
 
   const appendNextSection = useCallback(() => {
@@ -106,23 +106,48 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
 
   const jumpToLocation = (location: string) => {
     // ToDo: Put up spinner which will get cleared when promise completes.
-    getBookText(currentBook.slug, location).then((result) => {
+    if (!location) {
+      console.warn('No location given to jumpToLocation')
+      return
+    }
+    const [chapter, verses] = location.split(':')
+    const [firstVerse] = verses ? verses.split('-') : ['1']
+    getBookText(currentBook.slug, chapter).then((result) => {
       const section = textSectionToListSection(result)
       setSections([section])
-      setCurrentItem(section.data[0])
+      let goToVerse = parseInt(firstVerse)
+      if (isNaN(goToVerse)) {
+        goToVerse = 0
+      }
+      setCurrentItem(section.data[goToVerse-1])
       if (contentListRef) {
-        contentListRef.current?.scrollToLocation({
-          animated: false,
-          itemIndex: 0,
-          sectionIndex: 0,
-          viewPosition: 0,
-        })
+        setTimeout(() => {
+          contentListRef.current?.scrollToLocation({
+            animated: false,
+            itemIndex: goToVerse,
+            sectionIndex: 0,
+            viewPosition: 0,
+          })
+        }, 300)
       }
     })
+    addLinkNames(currentBook.slug, location)
   }
 
+  // Save settings when stuff changes
+  useEffect(() => {
+    if (currentBook) {
+      const location = currentItem ? currentItem.key.replace(currentBook.slug + ' ', '') : null
+      saveBookSettings({
+        bookSlug: currentBook.slug,
+        location,
+        commentaries: selectedCommentaries,
+        lastRead: new Date(),
+      })
+    }
+  }, [currentBook?.slug, currentItem?.key, selectedCommentaries])
+
   const contentsJumpAndClose = (location: string) => {
-    console.debug('jump to ', location)
     jumpToLocation(location)
     setShowTOC(false)
   }
@@ -137,16 +162,18 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
     const {bookname, chapter} = splitBookRef(prev)
     getBookText(bookname, chapter).then( (result) => {
       if (result) {
-        setSections([textSectionToListSection(result), ...sections])
+        const newSections = textSectionToListSection(result)
+        setSections([newSections, ...sections])
         // When this callback was called, we must have been at the zeroth item of the zeroth section.
-        // Now that we've prepended a new section, we want to be where we were before, which is now
-        // the zeroth item of the 1st section.
-        contentListRef.current?.scrollToLocation({
-          animated: false,
-          itemIndex: 0,
-          sectionIndex: 1,
-          viewPosition: 0,
-        })
+        // Now that we've prepended a new section, we want to be at the last item of the previous section
+        setTimeout(() => {
+          contentListRef.current?.scrollToLocation({
+            animated: false,
+            itemIndex: newSections.data.length,
+            sectionIndex: 0,
+            viewPosition: 0,
+          })
+        }, 300)
       }
       else {
         console.warn('No result when loading previous section')
@@ -157,16 +184,17 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
 
   const onScrollToIndexFailed = (failInfo: {index: number, averageItemLength: number}) => {
     console.debug('onScrollToIndexFailed, ', failInfo)
-    // FixMe: If we were using a FlatList, the commented code below would be the usual way
-    // of dealing with this.  But at least as the typescript interfaces are defined, there is
-    // no scrollToOffset method in SectionList, and not sure how to figure out where to go for
-    // scrollToLocation.  Maybe we can coerce to VirtualizedList and use scrollToOffset anyway?
-    // Or maybe we can assume (as is the case for now) to just go to the bottom of the first
-    // section, since that's currently the main use case where we might run into scrollToIndex failing,
-    // when someone is currently at the top of the window and loading previous content.
-    // Or maybe we can do something with the currentItem and a useEffect? TBD
-    // const offset = failInfo.averageItemLength * failInfo.index
-    // contentListRef.current?.scrollToOffset(offset)
+    // Note: the error that this handler gives us tells us the index, but not the sectionIndex.
+    // Probably this is an oversight by the React Native folks. In any case, our code currently
+    // only ever jumps to sectionIndex 0, so we are ok for now.
+    setTimeout(() => {
+      contentListRef.current?.scrollToLocation({
+        animated: true,
+        itemIndex: failInfo.index,
+        sectionIndex: 0,
+        viewPosition: 0,
+      })
+    }, 100)
   } 
 
   return (
@@ -213,7 +241,7 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
         }}
       />
       {currentItem && 
-        <Commentary verseKey={currentItem.key} bookLinks={availableLinks}/>
+        <Commentary verseKey={currentItem.key} bookLinks={availableLinks} selectedCommentaries={selectedCommentaries} setSelectedCommentaries={setSelectedCommentaries}/>
       }
 
     </View>

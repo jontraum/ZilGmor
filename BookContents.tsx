@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
 })
 
 // Regular expression to find the particular amud of a Gemara reference
-const dafRegEx = /(\d+[ab])$/
+const dafRegEx = /(\d+[ab](?::[\d-]+)?)$/
 
 interface BookContentsProps {
   bookInfo: BookInfo

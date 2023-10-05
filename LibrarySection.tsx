@@ -1,20 +1,36 @@
 import React from 'react'
 import { BookInfo } from './data/types'
-import { ScrollView, Text } from 'react-native'
+import { Pressable, View, StyleSheet, Text } from 'react-native'
 
 interface LibrarySectionArgs {
     bookList: BookInfo[];
     setCurrentBook: (book: BookInfo) => void;
 }
+const styles = StyleSheet.create({
+  container: {
+    flexDirection:'row',
+    flexWrap: 'wrap',
+  },
+  bookButton: {
+    fontSize: 20,
+    fontFamily: 'serif',
+    borderStyle: 'solid',
+    borderWidth: 1,
+    padding: 3,
+    margin: 5,
+  },
+})
 
 export function LibrarySection({bookList, setCurrentBook}: LibrarySectionArgs) {
   return (
-    <ScrollView style={{flex: 1, flexDirection:'column'}} >
+    <View style={styles.container} >
       { bookList.map( (book, idx) => {
         return (
-          <Text key={idx} onPress={() => setCurrentBook(book)}>{book.title.en} - {book.title.he}</Text>
+          <Pressable key={idx} onPress={() => setCurrentBook(book)}>
+            <Text style={styles.bookButton}>{book.title.en} - {book.title.he}</Text>
+          </Pressable>
         )
       })}
-    </ScrollView>
+    </View>
   )
 }

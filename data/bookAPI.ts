@@ -69,6 +69,8 @@ export function getNamesOfLinksForBook(book: string, chapter: string): Promise<v
         links.add(label)
       })
       return links
+    }).catch( (err) => {
+      console.warn('getNamesOfLinksForBook error ', err)
     })
 }
 

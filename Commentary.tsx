@@ -8,6 +8,8 @@ import { GetLinks } from './data/bookAPI'
 interface CommentaryProps {
     verseKey: string;
     bookLinks: string[];
+    selectedCommentaries: string[];
+    setSelectedCommentaries: (commentaries: string[]) => void;
 }
 
 const styles = StyleSheet.create({
@@ -71,12 +73,11 @@ const styles = StyleSheet.create({
 
 const rashi = {'en': 'Rashi', 'he': 'רש"י'}
 
-export function Commentary({verseKey, bookLinks}: CommentaryProps) {
+export function Commentary({verseKey, bookLinks, selectedCommentaries, setSelectedCommentaries}: CommentaryProps) {
   const [linkMap, setLinkMap] = useState<LinkMap>()
   // Temporarily defaulting commentary to Rashi.
   const [currentCommentary, setCurrentCommentary] = useState<string>(rashi.en)
-  // Selected commentaries. Initial implemenation in local state, but eventually settings based on book
-  const [selectedCommentaries, setSelectedCommentaries] = useState<string[]>([rashi.en])
+
   const [selectingLinks, setSelectingLinks] = useState<boolean>(false)
 
   const dimensions = useWindowDimensions()
