@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite'
 
-interface BookSettings {
+export interface BookSettings {
   bookSlug: string; // How the book is identified in Sefaria's API
   location: string; // Where in the book we last read
   commentaries: string[]; // List of commentaries currently being used with the book.
@@ -22,14 +22,25 @@ const bookSettingsCreateSQL = `CREATE TABLE IF NOT EXISTS book_settings (
 
 const bookSettingsCreateIndexSQL = 'create index if not exists settings_bookslug_index on book_settings(book_slug);'
 
-export function initializeDB() {
-  return db.transactionAsync(tx => {
-    return tx.executeSqlAsync(bookSettingsCreateSQL)
-      .then( () => tx.executeSqlAsync(bookSettingsCreateIndexSQL) )
-      .catch( (err) => {
-        console.error('Could not initialize book settings tables', err)
-      })
-  } )
+export async function initializeDB() {
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(bookSettingsCreateSQL)
+      tx.executeSql(bookSettingsCreateIndexSQL)
+    },
+    (error) => { console.log('db error creating tables'); console.log(error); reject(error) },
+    () => { console.debug('successfully initialized!'); resolve('success')},
+    )
+  })
+}
+
+function rowToBookSettings(row) : BookSettings {
+  return {
+    bookSlug: row.book_slug as string,
+    location: row.location as string,
+    commentaries: (row.commentaries as string).split('\t'),
+    lastRead: new Date(row.last_read as number),
+  }
 }
 
 export function getBookSettings(bookSlug: string) : Promise<BookSettings | null > {
@@ -39,14 +50,7 @@ export function getBookSettings(bookSlug: string) : Promise<BookSettings | null 
         .then( results => {
           if (results.rows) {
             if (results.rows.length > 0) {
-              const row = results.rows[0]
-              const settings = {
-                bookSlug: row.book_slug as string,
-                location: row.location as string,
-                commentaries: (row.commentaries as string).split('\t'),
-                last_read: new Date(row.last_read as number),
-              }
-              resolve(settings)
+              resolve(rowToBookSettings(results.rows[0]))
             }
             else {
               console.info(`no settings found for book "${bookSlug}"`)
@@ -72,6 +76,23 @@ export function saveBookSettings(settings: BookSettings) {
         // No rows updated. Must mean we need to insert
         tx.executeSqlAsync('insert into book_settings(location, commentaries, last_read, book_slug) values (?, ?, ?, ?)', values)
       }
+    })
+  })
+}
+
+export function getHistory() : Promise<BookSettings[]> {
+  return new Promise<BookSettings[]>( (resolve, reject) => {
+    db.transactionAsync(tx => {
+      return tx.executeSqlAsync('SELECT * from book_settings order by last_read DESC')
+        .then( results => {
+          if (results.rows) {
+            const history = results.rows.map( row => rowToBookSettings(row))
+            resolve(history)
+          }
+          else {
+            reject('No history rows found')
+          }
+        })
     })
   })
 }

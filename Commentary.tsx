@@ -129,7 +129,7 @@ export function Commentary({verseKey, bookLinks, selectedCommentaries, setSelect
         <ScrollView>
           <Text>Add commentary</Text>
           <View style={styles.linkSelectorBox}>
-            {selectedCommentaries.map( (linkName, idx) => {
+            {selectedCommentaries.map( (linkName) => {
               return (
                 <Pressable key={linkName} onPress={() => unselectLink(linkName)}>
                   <Text style={[styles.selectLinkButton, styles.selectLinkButtonSelected]}>{linkName}</Text>
@@ -144,7 +144,6 @@ export function Commentary({verseKey, bookLinks, selectedCommentaries, setSelect
                     <Text style={[styles.selectLinkButton, styles.selectLinkButtonUnselected]}>{linkName}</Text>
                   </Pressable>
                 )
-                return null
               }
             })}
           </View>

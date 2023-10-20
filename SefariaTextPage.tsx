@@ -8,10 +8,14 @@ import { BookInfo } from './data/types'
 import { Commentary } from './Commentary'
 import { BookContents } from './BookContents'
 import { getBookSettings, saveBookSettings } from './data/settings'
+import { globalStyles } from './styles'
+
+const iconSize = 30
 
 interface SefariaTextPageProps {
   currentBook: BookInfo;
   goToLibrary: () => void;
+  showHistory: () => void;
 }
 
 interface ListSectionContent {
@@ -43,7 +47,7 @@ function textSectionToListSection(section: BookText): ListSectionContent {
   }
 }
 
-export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps) {
+export function SefariaTextPage({currentBook, goToLibrary, showHistory}: SefariaTextPageProps) {
   const [sections, setSections] = useState<ListSectionContent[]>([])
   const [currentItem, setCurrentItem] = useState<SefariaTextItemProps | null>()
   const [showTOC, setShowTOC] = useState<boolean>(false)
@@ -199,10 +203,13 @@ export function SefariaTextPage({currentBook, goToLibrary}: SefariaTextPageProps
 
   return (
     <View style={{flexDirection: 'column'}}>
-      <View style={{height: 50, flex: 0.1, flexDirection:'row', justifyContent: 'space-between', margin: 5}}>
-        <Ionicons name="library" size={24} color="black" onPress={goToLibrary} />
-        <Text style={{fontWeight: 'bold', fontSize:24}}>{currentItem?.key}</Text>
-        <MaterialIcons name="toc" size={24} color="black" onPress={() => setShowTOC(true)} />
+      <View style={globalStyles.pageHeaderContainer}>
+        <Ionicons name="library" size={iconSize} color="black" onPress={goToLibrary} />
+        <Text style={globalStyles.pageHeaderText}>{currentItem?.key}</Text>
+        <View style={globalStyles.headerButtonBox}>
+          <MaterialIcons name="history" size={iconSize} color="black" onPress={showHistory} />
+          <MaterialIcons name="toc" size={iconSize} color="black" onPress={() => setShowTOC(true)} />
+        </View>
       </View>
       <Modal visible={showTOC} onRequestClose={() => setShowTOC(false)}>
         <BookContents bookInfo={currentBook} jumpAndClose={contentsJumpAndClose} />

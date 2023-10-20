@@ -1,21 +1,45 @@
-import { StyleSheet, Text, View, StatusBar } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { StyleSheet, View, StatusBar } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
 import { SefariaTextPage } from './SefariaTextPage'
 import { LibrarySection } from './LibrarySection'
 import { bavli } from './data/bavli'
-import { initializeDB } from './data/settings'
-// import Constants from 'expo-constants';
+import { getHistory, initializeDB } from './data/settings'
+import { SeferHistory } from './SeferHistory'
+import * as SplashScreen from 'expo-splash-screen'
+
+SplashScreen.preventAutoHideAsync()
 
 export default function App () {
   const [currentBook, setCurrentBook] = useState()
+  const [showingHistory, setShowingHistory] = useState(false)
   //const [size, setSize] = useState(12)
   //const textStyle = { fontSize: size }
 
+  const showHistory = useCallback(() => {setShowingHistory(true)})
+  const goToBook = useCallback((bookSlug) => {
+    setCurrentBook({slug: bookSlug, title: {en: bookSlug}})
+    setShowingHistory(false)
+  })
+
   // On initial load of app, initialize the DB.
   useEffect(() => {
-    initializeDB()
+    initializeDB().then(() => {
+      getHistory().then((historyList) =>{
+        if (historyList && historyList.length > 0) {
+          goToBook(historyList[0].bookSlug)
+        }
+        SplashScreen.hideAsync()
+      })
+    })
   }, [])
 
+  if (showingHistory) {
+    return (
+      <View style={styles.container}>
+        <SeferHistory loadBook={goToBook}/>
+      </View>
+    )
+  }
   if (currentBook) {
     return (
       <View style={styles.container}>
@@ -26,13 +50,13 @@ export default function App () {
         <SefariaTextPage
           currentBook={currentBook}
           goToLibrary={() => { setCurrentBook(null) }}
+          showHistory={showHistory}
         />
       </View>
     )
   } else {
     return (
       <View style={styles.container}>
-        <Text>Here are some books!</Text>
         <LibrarySection bookList={bavli} setCurrentBook={setCurrentBook} />
       </View>
     )
