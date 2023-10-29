@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react'
-import {Pressable, Text, View} from 'react-native'
+import {Pressable, ScrollView, Text, View} from 'react-native'
 import { BookSettings, getHistory } from './data/settings'
 import { globalStyles } from './styles'
+import { LibraryButton } from './buttons/LibraryButton'
 
 interface SeferHistoryProps {
   loadBook: (bookSlug: string) => void;
+  goToLibrary: () => void;
 }
 
-export function SeferHistory({loadBook}: SeferHistoryProps) {
+export function SeferHistory({loadBook, goToLibrary}: SeferHistoryProps) {
   const [historyList, setHistoryList] = useState<BookSettings[] | null>()
 
   useEffect( () => {
@@ -30,17 +32,20 @@ export function SeferHistory({loadBook}: SeferHistoryProps) {
     return (
       <View  style={{flexDirection: 'column'}}>
         <View style={globalStyles.pageHeaderContainer}>
+          <LibraryButton onPress={goToLibrary} />
           <Text style={globalStyles.pageHeaderText}>History</Text>
         </View>
-        <View style={{flex: 10, marginBottom: 2}}>
+        <ScrollView>
           { historyList.map( (item, itemNum) => {
             return (
-              <Pressable key={itemNum} onPress={() => loadBook(item.bookSlug)} >
-                <Text style={globalStyles.bookButton}>{item.bookSlug} {item.location}</Text>
-              </Pressable>
+              <View style={{flexDirection: 'column' }}key={itemNum}>
+                <Pressable onPress={() => loadBook(item.bookSlug)} >
+                  <Text style={globalStyles.bookButton}>{item.bookSlug} {item.location}</Text>
+                </Pressable>
+              </View>
             )
           }) }
-        </View>
+        </ScrollView>
       </View>
     )
   }

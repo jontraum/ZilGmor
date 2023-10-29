@@ -50,10 +50,12 @@ const styles = StyleSheet.create({
 export function SefariaTextItem ({ textHE, textEN, selected = false }: SefariaTextItemProps) {
   return (
     <View style={selected ? [styles.container, styles.selected] : styles.container}>
-      <RenderHtml baseStyle={styles.hebrew} contentWidth={styles.textView.width} source={{ html: textHE }} />
-      <RenderHtml baseStyle={styles.english} contentWidth={styles.textView.width} source={{ html: textEN }} />
-      {/* <AutoHeightWebView style={styles.textView} source={{html: textHE, baseUrl: "http://sefaria.org/"}} originWhitelist={['*']} />
-            <AutoHeightWebView textZoom={100} style={styles.textView} source={{html: textEN, baseUrl: "http://sefaria.org/"}} originWhitelist={['*']} /> */}
+      { textHE && (
+        <RenderHtml baseStyle={styles.hebrew} contentWidth={styles.textView.width} source={{ html: textHE }} />
+      )}
+      { textEN && (
+        <RenderHtml baseStyle={styles.english} contentWidth={styles.textView.width} source={{ html: textEN }} />
+      )}
     </View>
   )
 }

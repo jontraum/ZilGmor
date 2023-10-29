@@ -3,7 +3,7 @@ import { Dimensions, Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDi
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import RenderHtml from 'react-native-render-html'
 import { Link, LinkMap } from './data/types'
-import { GetLinks } from './data/bookAPI'
+import { GetLinks, unGroupedLinkTypes } from './data/bookAPI'
 
 interface CommentaryProps {
     verseKey: string;
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   linkBar: {
     borderBottomWidth: 2,
     borderColor: '#ccccdd',
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     flexWrap: 'wrap',
     width: Dimensions.get('window').width - 2,
   },
@@ -68,6 +68,18 @@ const styles = StyleSheet.create({
   hebrewText: {
     fontFamily: 'serif',
     fontSize: 18,
+  },
+  hebrewSourceLabel: {
+    fontSize: 10,
+    color: '#555',
+  },
+  englishText: {
+    fontFamily: 'serif',
+    fontSize: 14,
+  },
+  englishSourceLabel: {
+    fontSize: 10,
+    color: '#555',
   },
 })
 
@@ -171,11 +183,28 @@ export function Commentary({verseKey, bookLinks, selectedCommentaries, setSelect
       </View>
       <ScrollView style={styles.linkPane}>
         {currentLinks.map( (linkItem, idx) => {
-          // ToDo: Currently only shows Hebrew text.  Add ability to show English as well or instead.
-          // If we are showing both, and there are multiple verses, should probably intersperse them.
-          const linkText = typeof(linkItem.he) === 'string' ? linkItem.he : linkItem.he.join(' ')
+          // If we are showing both, and there are multiple verses, should maybe intersperse them.
+          const linkTextHe = typeof(linkItem.he) === 'string' ? linkItem.he : linkItem.he.join(' ')
+          const linkTextEn = typeof(linkItem.text) === 'string' ? linkItem.text: linkItem.text.join(' ')
           return (
-            <RenderHtml baseStyle={styles.hebrewText} contentWidth={dimensions.width - 4} key={idx} source={{html: linkText}} />
+            <View key={idx}>
+              { linkTextHe?.length > 0 && (
+                <>
+                  { !unGroupedLinkTypes.includes(linkItem.category) && (
+                    <Text style={styles.hebrewSourceLabel}>{linkItem.sourceHeRef}</Text>
+                  )}
+                  <RenderHtml baseStyle={styles.hebrewText} contentWidth={dimensions.width - 4} source={{html: linkTextHe}} />
+                </>
+              ) }
+              { linkTextEn?.length > 0 && (
+                <>
+                  { !unGroupedLinkTypes.includes(linkItem.category) && (
+                    <Text style={styles.englishSourceLabel}>{linkItem.sourceRef}</Text>
+                  )}
+                  <RenderHtml baseStyle={styles.englishText} contentWidth={dimensions.width - 4} source={{html: linkTextEn}} />
+                </>
+              ) }
+            </View>
           )
         })}
 

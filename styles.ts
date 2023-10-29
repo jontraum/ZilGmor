@@ -26,3 +26,5 @@ export const globalStyles = StyleSheet.create({
     margin: 5,
   },
 })
+
+export const topButtonSize = 30

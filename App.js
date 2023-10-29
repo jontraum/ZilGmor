@@ -1,8 +1,7 @@
 import { StyleSheet, View, StatusBar } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import { SefariaTextPage } from './SefariaTextPage'
-import { LibrarySection } from './LibrarySection'
-import { bavli } from './data/bookIndexes'
+import { Library } from './Library'
 import { getHistory, initializeDB } from './data/settings'
 import { SeferHistory } from './SeferHistory'
 import * as SplashScreen from 'expo-splash-screen'
@@ -15,7 +14,15 @@ export default function App () {
   //const [size, setSize] = useState(12)
   //const textStyle = { fontSize: size }
 
-  const showHistory = useCallback(() => {setShowingHistory(true)})
+  const showHistory = useCallback(() => {
+    setShowingHistory(true)
+  })
+
+  const goToLibrary = useCallback(() => {
+    setShowingHistory(false)
+    setCurrentBook(null)
+  })
+  
   const goToBook = useCallback((bookSlug) => {
     setCurrentBook({slug: bookSlug, title: {en: bookSlug}})
     setShowingHistory(false)
@@ -36,7 +43,7 @@ export default function App () {
   if (showingHistory) {
     return (
       <View style={styles.container}>
-        <SeferHistory loadBook={goToBook}/>
+        <SeferHistory loadBook={goToBook} goToLibrary={goToLibrary}/>
       </View>
     )
   }
@@ -49,7 +56,7 @@ export default function App () {
         </View> */}
         <SefariaTextPage
           currentBook={currentBook}
-          goToLibrary={() => { setCurrentBook(null) }}
+          goToLibrary={goToLibrary}
           showHistory={showHistory}
         />
       </View>
@@ -57,7 +64,7 @@ export default function App () {
   } else {
     return (
       <View style={styles.container}>
-        <LibrarySection bookList={bavli} setCurrentBook={setCurrentBook} />
+        <Library showHistory={showHistory} setCurrentBook={setCurrentBook} />
       </View>
     )
   }

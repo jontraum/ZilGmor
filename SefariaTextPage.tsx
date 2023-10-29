@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Modal, SectionList, Text, View } from 'react-native'
+import { ActivityIndicator, Modal, SectionList, Text, View } from 'react-native'
 import { Ionicons, MaterialIcons } from '@expo/vector-icons' 
 
 import { SefariaTextItem, SefariaTextItemProps } from './SefariaTextItem'
@@ -8,9 +8,8 @@ import { BookInfo } from './data/types'
 import { Commentary } from './Commentary'
 import { BookContents } from './BookContents'
 import { getBookSettings, saveBookSettings } from './data/settings'
-import { globalStyles } from './styles'
-
-const iconSize = 30
+import { globalStyles, topButtonSize } from './styles'
+import { HistoryButton } from './buttons/HistoryButton'
 
 interface SefariaTextPageProps {
   currentBook: BookInfo;
@@ -31,8 +30,8 @@ function textSectionToListSection(section: BookText): ListSectionContent {
   // Sefaria book names can have spaces in them, and they are replaced with underlines when fetching
   // But the space between the book name and the chapter or amud identifier is replaced with a dot!
   return {
-    title: section.title,
-    heTitle: section.heTitle,
+    title: section.sectionRef,
+    heTitle: section.heSectionRef,
     key: section.title,
     next: section.next,
     prev: section.prev,
@@ -80,11 +79,13 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
     let startingPage = '2a' // ToDo: better logic for default start. 2a works for Gemara, probably not much else.
     getBookSettings(currentBook.slug)
       .then((settings) => {
-        if (settings) {
+        if (settings?.location) {
           startingPage = settings.location
           setSelectedCommentaries(settings.commentaries)
+          jumpToLocation(startingPage)
+        } else {
+          setShowTOC(true)
         }
-        jumpToLocation(startingPage)
       })
   }, [] )
 
@@ -140,8 +141,8 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
 
   // Save settings when stuff changes
   useEffect(() => {
-    if (currentBook) {
-      const location = currentItem ? currentItem.key.replace(currentBook.slug + ' ', '') : null
+    if (currentBook && currentItem?.key) {
+      const location = currentItem.key.replace(currentBook.slug + ' ', '')
       saveBookSettings({
         bookSlug: currentBook.slug,
         location,
@@ -199,54 +200,65 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
         viewPosition: 0,
       })
     }, 100)
-  } 
+  }
+
+  const onTOCClose = useCallback(() => {
+    if (!currentItem && sections.length == 0) {
+      // Contents closed, and it looks like we had no prev content. Back to library.
+      goToLibrary()
+    }
+    setShowTOC(false)
+  }, [currentItem, sections])
 
   return (
     <View style={{flexDirection: 'column'}}>
       <View style={globalStyles.pageHeaderContainer}>
-        <Ionicons name="library" size={iconSize} color="black" onPress={goToLibrary} />
+        <Ionicons name="library" size={topButtonSize} color="black" onPress={goToLibrary} />
         <Text style={globalStyles.pageHeaderText}>{currentItem?.key}</Text>
         <View style={globalStyles.headerButtonBox}>
-          <MaterialIcons name="history" size={iconSize} color="black" onPress={showHistory} />
-          <MaterialIcons name="toc" size={iconSize} color="black" onPress={() => setShowTOC(true)} />
+          <HistoryButton onPress={showHistory} />
+          <MaterialIcons name="toc" size={topButtonSize} color="black" onPress={() => setShowTOC(true)} />
         </View>
       </View>
-      <Modal visible={showTOC} onRequestClose={() => setShowTOC(false)}>
+      <Modal visible={showTOC} onRequestClose={onTOCClose}>
         <BookContents bookInfo={currentBook} jumpAndClose={contentsJumpAndClose} />
       </Modal>
-      <SectionList
-        style={{flex: 10, marginBottom: 2}}
-        sections={sections}
-        ref={contentListRef}
-        renderItem={ ({item}) => (
-          <SefariaTextItem selected={item.key === currentItem?.key} {...item} />
-        )}
-        renderSectionHeader={({section}) => {
-          return (
-            <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-              <Text style={{fontWeight: 'bold', fontSize: 18}}>{(section).title}</Text>
-              <Text style={{fontWeight: 'bold', fontSize: 18}}>{(section).heTitle}</Text>
-            </View>
-          )}}
-        onEndReached={appendNextSection}
-        onEndReachedThreshold={1.5}
-        onRefresh={loadPrevious}
-        onScrollToIndexFailed={onScrollToIndexFailed}
-        refreshing={loadingPrevious}
-        viewabilityConfig={{itemVisiblePercentThreshold: 90}}
-        onViewableItemsChanged={({viewableItems} ) => {
-          if (viewableItems && viewableItems[0]?.item) {
-            const item = viewableItems[0].item
-            if (item.textEN || item.textHE) {
-              // ignore section headers - only set if it is a text node
-              setCurrentItem(viewableItems[0].item)
+      { sections.length > 0 ? (
+        <SectionList
+          style={{flex: 10, marginBottom: 2}}
+          sections={sections}
+          ref={contentListRef}
+          renderItem={ ({item}) => (
+            <SefariaTextItem selected={item.key === currentItem?.key} {...item} />
+          )}
+          renderSectionHeader={({section}) => {
+            return (
+              <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                <Text style={{fontWeight: 'bold', fontSize: 18}}>{(section).title}</Text>
+                <Text style={{fontWeight: 'bold', fontSize: 18}}>{(section).heTitle}</Text>
+              </View>
+            )}}
+          onEndReached={appendNextSection}
+          onEndReachedThreshold={1.5}
+          onRefresh={loadPrevious}
+          onScrollToIndexFailed={onScrollToIndexFailed}
+          refreshing={loadingPrevious}
+          viewabilityConfig={{itemVisiblePercentThreshold: 90}}
+          onViewableItemsChanged={({viewableItems} ) => {
+            if (viewableItems && viewableItems[0]?.item) {
+              const item = viewableItems[0].item
+              if (item.textEN || item.textHE) {
+                // ignore section headers - only set if it is a text node
+                setCurrentItem(viewableItems[0].item)
+              }
+              else if (viewableItems[1]) {
+                setCurrentItem(viewableItems[1].item)
+              }
             }
-            else if (viewableItems[1]) {
-              setCurrentItem(viewableItems[1].item)
-            }
-          }
-        }}
-      />
+          }}
+        /> ) : (
+        <View><ActivityIndicator size='large' /></View>
+      ) }
       {currentItem && 
         <Commentary verseKey={currentItem.key} bookLinks={availableLinks} selectedCommentaries={selectedCommentaries} setSelectedCommentaries={setSelectedCommentaries}/>
       }

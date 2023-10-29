@@ -10,6 +10,7 @@ export interface BookText {
     heTitle: string;
     /** how the section is referenced when fetching it. Format is something like "title.section" */
     sectionRef: string;
+    heSectionRef: string;
     /** Section identifier without the book title. Could be chapter number in most cases, but for Gemara it's the Amud (e.g. '13a')
      * It is an array because in theory we could have requested multiple chapters/amudim/section in one request.
      */
@@ -44,12 +45,13 @@ export function splitBookRef(ref:string) {
   return{bookname, chapter}
 }
 
+export const unGroupedLinkTypes = ['Commentary', 'Targum']
 function getLinkLabel(link: Link): string {
   /** Get the label/heading under which we group the link.
    * Commentaries are grouped by the individual commentator (Rashi, Tosafos, etc)
    * Other types of links, like quotes from Tanach, Talmud, etc are grouped by link category
    */
-  return link.category === 'Commentary' ? link.collectiveTitle.en : link.category
+  return unGroupedLinkTypes.includes(link.category) ? link.collectiveTitle.en : link.category
 }
 
 export function getNamesOfLinksForBook(book: string, chapter: string): Promise<void | Set<string>> {

@@ -8,6 +8,11 @@ export interface BookInfo {
     title: Title;
 }
 
+export interface BookSet {
+    title: Title;
+    books: BookInfo[];
+}
+
 /** A link provided by Sefaria's link API. Used for commentary and other references */
 export interface Link {
     /** ??Where the link is linked from?? */
@@ -32,6 +37,7 @@ export interface Link {
     // "heVersionTitleInHebrew": "מהדורת וילנא",
     ref: string; //"Rashi on Exodus 1.12.1",
     sourceRef: string; // "Rashi on Exodus 1:12:1",
+    sourceHeRef: string; //  "שמות כ״ג:י׳"
     /** Text of the link, in English. If multiple verses are selected, will be an array instead of a string. */
     text: string | string[]; // "In any way in which they deigned to oppress, that was where the heart of the Holy Blessed One [saw fit to] increase and spread out.",
     // "_id": string; // "5234a6adedbab465c9549b14",
@@ -79,5 +85,6 @@ export interface BookIndex {
     heTitle: string;
     schema: BookIndexSchema;
     alts?: BookIndexAlts;
+    exclude_structs?: string[];
 }
 

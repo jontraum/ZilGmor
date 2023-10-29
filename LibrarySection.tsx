@@ -1,14 +1,26 @@
 import React from 'react'
-import { BookInfo } from './data/types'
+import { BookInfo, BookSet } from './data/types'
 import { Pressable, View, StyleSheet, Text } from 'react-native'
 
 interface LibrarySectionArgs {
-    bookList: BookInfo[];
+    bookSet: BookSet;
     setCurrentBook: (book: BookInfo) => void;
 }
 const styles = StyleSheet.create({
-  container: {
-    flexDirection:'row',
+  mainContainer: {
+    flexDirection: 'column',
+    borderWidth: 2,
+    borderColor: '#66152a',
+    padding: 5,
+    margin: 5,
+  },
+  bookSetTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    fontStyle: 'italic',
+  },
+  bookSetContainer: {
+    flexDirection:'row-reverse',
     flexWrap: 'wrap',
   },
   bookButton: {
@@ -21,16 +33,19 @@ const styles = StyleSheet.create({
   },
 })
 
-export function LibrarySection({bookList, setCurrentBook}: LibrarySectionArgs) {
+export function LibrarySection({bookSet, setCurrentBook}: LibrarySectionArgs) {
   return (
-    <View style={styles.container} >
-      { bookList.map( (book, idx) => {
-        return (
-          <Pressable key={idx} onPress={() => setCurrentBook(book)}>
-            <Text style={styles.bookButton}>{book.title.en} - {book.title.he}</Text>
-          </Pressable>
-        )
-      })}
+    <View style={styles.mainContainer}>
+      <View><Text style={styles.bookSetTitle}>{bookSet.title.he || bookSet.title.en}</Text></View>
+      <View style={styles.bookSetContainer} >
+        { bookSet.books.map( (book, idx) => {
+          return (
+            <Pressable key={idx} onPress={() => setCurrentBook(book)}>
+              <Text style={styles.bookButton}>{book.title.he}</Text>
+            </Pressable>
+          )
+        })}
+      </View>
     </View>
   )
 }
