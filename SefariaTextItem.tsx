@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { View, StyleSheet, Dimensions } from 'react-native'
 import RenderHtml from 'react-native-render-html'
 // Keeping these old imports to remember these alternatives, in case I want to go back to them later
@@ -18,6 +18,7 @@ const padding = 1
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: '#fff',
     flex: 1,
     justifyContent: 'space-between',
     padding,
@@ -47,7 +48,9 @@ const styles = StyleSheet.create({
   },
 })
 
-export function SefariaTextItem ({ textHE, textEN, selected = false }: SefariaTextItemProps) {
+// Using React's memo function here to prevent the warning:
+//   "VirtualizedList: You have a large list that is slow to update - make sure your renderItem function renders components that follow React performance best practices like PureComponent, shouldComponentUpdate, etc."
+export const SefariaTextItem = memo(function SefariaTextItem ({ textHE, textEN, selected = false }: SefariaTextItemProps) {
   return (
     <View style={selected ? [styles.container, styles.selected] : styles.container}>
       { textHE && (
@@ -58,4 +61,4 @@ export function SefariaTextItem ({ textHE, textEN, selected = false }: SefariaTe
       )}
     </View>
   )
-}
+})
