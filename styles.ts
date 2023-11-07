@@ -1,5 +1,12 @@
 import { StyleSheet } from 'react-native'
 
+export const defaultColorScheme = {
+  backgroundColor: '#fff',
+  color: '#000',
+  shadow: '#444',
+  modalBorder: '#777',
+}
+
 export const globalStyles = StyleSheet.create({
   pageHeaderContainer: {
     height: 50,

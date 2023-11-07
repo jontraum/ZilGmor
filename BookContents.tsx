@@ -1,22 +1,18 @@
 import React, { memo, useCallback } from 'react'
-import { BookIndex, BookInfo } from './data/types'
+import { BookIndex } from './data/types'
 import { Dimensions, ActivityIndicator, NativeSyntheticEvent, Pressable, ScrollView, StyleSheet, Text, TextInput, TextInputSubmitEditingEventData, View } from 'react-native'
 
 const styles = StyleSheet.create({
   topContainer: {
-    backgroundColor: '#fff',
-    borderWidth: 3,
-    margin: 30,
     padding: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   subContainer: {
     flex: 1,
   },
   mainHeader: {
-    fontSize: 30,
+    fontSize: 24,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   contentContainer: {
     marginBottom: 10,
@@ -70,12 +66,11 @@ const altViewMargin = 300
 const refRegEx = /(\d+[ab]?(?::[\d-]+)?)/
 
 interface BookContentsProps {
-  bookInfo: BookInfo
   jumpAndClose: (location:string) => void
   index: BookIndex | null
 }
 
-export const BookContents = memo(function BookContents({bookInfo, jumpAndClose, index}: BookContentsProps) {
+export const BookContents = memo(function BookContents({jumpAndClose, index}: BookContentsProps) {
   if (!index) {
     return (
       <View>

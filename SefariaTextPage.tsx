@@ -10,6 +10,7 @@ import { BookContents } from './BookContents'
 import { getBookSettings, saveBookSettings } from './data/settings'
 import { globalStyles, topButtonSize } from './styles'
 import { HistoryButton } from './buttons/HistoryButton'
+import { PersistentModal } from './PersistentModal'
 
 interface SefariaTextPageProps {
   currentBook: BookInfo;
@@ -254,70 +255,72 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
   }, [currentItem, sections])
 
   const contents = useMemo( () => {
-    console.debug('rendering contents', new Date())
     return (
-      <BookContents bookInfo={currentBook} jumpAndClose={contentsJumpAndClose} index={index} />
+      <BookContents jumpAndClose={contentsJumpAndClose} index={index} />
     )
   }, [currentBook.slug, index])
 
   return (
-    <View style={textPageStyles.topContainer}>
-      <View style={globalStyles.pageHeaderContainer}>
-        <Ionicons name="library" size={topButtonSize} color="black" onPress={goToLibrary} />
-        <Text style={globalStyles.pageHeaderText}>{currentItem?.key}</Text>
-        <View style={globalStyles.headerButtonBox}>
-          <HistoryButton onPress={showHistory} />
-          <MaterialIcons name="toc" size={topButtonSize} color="black" onPress={() => setShowTOC(!showTOC)} />
+    <>
+      <PersistentModal visible={showTOC} onClose={onTOCClose}>
+        {contents}
+      </PersistentModal>
+      <View style={textPageStyles.topContainer}>
+        <View style={globalStyles.pageHeaderContainer}>
+          <Ionicons name="library" size={topButtonSize} color="black" onPress={goToLibrary} />
+          <Text style={globalStyles.pageHeaderText}>{currentItem?.key}</Text>
+          <View style={globalStyles.headerButtonBox}>
+            <HistoryButton onPress={showHistory} />
+            <MaterialIcons name="toc" size={topButtonSize} color="black" onPress={() => setShowTOC(!showTOC)} />
+          </View>
         </View>
-      </View>
-      <View style={textPageStyles.mainPageContainer}>
-        <View style={showTOC ? textPageStyles.tocActive : textPageStyles.tocHidden}>
-          {contents}
-        </View>
-        <View style={textPageStyles.primaryTextContainer}>
-          { sections.length > 0 ? (
-            <SectionList
-              sections={sections}
-              ref={contentListRef}
-              renderItem={ ({item}) => (
-                <SefariaTextItem selected={item.key === currentItem?.key} {...item} />
-              )}
-              renderSectionHeader={({section}) => {
-                return (
-                  <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-                    <Text style={{fontWeight: 'bold', fontSize: 18}}>{(section).title}</Text>
-                    <Text style={{fontWeight: 'bold', fontSize: 18}}>{(section).heTitle}</Text>
-                  </View>
-                )}}
-              onEndReached={appendNextSection}
-              onEndReachedThreshold={1.5}
-              onRefresh={loadPrevious}
-              onScrollToIndexFailed={onScrollToIndexFailed}
-              refreshing={loadingPrevious}
-              viewabilityConfig={{itemVisiblePercentThreshold: 90}}
-              onViewableItemsChanged={({viewableItems} ) => {
-                if (viewableItems && viewableItems[0]?.item) {
-                  const item = viewableItems[0].item
-                  if (item.textEN || item.textHE) {
+        <View style={textPageStyles.mainPageContainer}>
+
+          <View style={textPageStyles.primaryTextContainer}>
+            { sections.length > 0 ? (
+              <SectionList
+                sections={sections}
+                ref={contentListRef}
+                renderItem={ ({item}) => (
+                  <SefariaTextItem selected={item.key === currentItem?.key} {...item} />
+                )}
+                renderSectionHeader={({section}) => {
+                  return (
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                      <Text style={{fontWeight: 'bold', fontSize: 18}}>{(section).title}</Text>
+                      <Text style={{fontWeight: 'bold', fontSize: 18}}>{(section).heTitle}</Text>
+                    </View>
+                  )}}
+                onEndReached={appendNextSection}
+                onEndReachedThreshold={1.5}
+                onRefresh={loadPrevious}
+                onScrollToIndexFailed={onScrollToIndexFailed}
+                refreshing={loadingPrevious}
+                viewabilityConfig={{itemVisiblePercentThreshold: 90}}
+                onViewableItemsChanged={({viewableItems} ) => {
+                  if (viewableItems && viewableItems[0]?.item) {
+                    const item = viewableItems[0].item
+                    if (item.textEN || item.textHE) {
                     // ignore section headers - only set if it is a text node
-                    setCurrentItem(viewableItems[0].item)
+                      setCurrentItem(viewableItems[0].item)
+                    }
+                    else if (viewableItems[1]) {
+                      setCurrentItem(viewableItems[1].item)
+                    }
                   }
-                  else if (viewableItems[1]) {
-                    setCurrentItem(viewableItems[1].item)
-                  }
-                }
-              }}
-            /> ) : (
-            <ActivityIndicator size='large' />
-          ) }
-        </View>
-        {currentItem && 
+                }}
+              /> ) : (
+              <ActivityIndicator size='large' />
+            ) }
+          </View>
+          {currentItem && 
         <View style={textPageStyles.linksContainer}>
           <Commentary verseKey={currentItem.key} bookLinks={availableLinks} selectedCommentaries={selectedCommentaries} setSelectedCommentaries={setSelectedCommentaries}/>
         </View>
-        }
+          }
+        </View>
       </View>
-    </View>
+    </>  
   )
 
 }
