@@ -106,7 +106,6 @@ export const BookContents = memo(function BookContents({jumpAndClose, index}: Bo
         <View style={styles.chapterContainer}>
           <Text style={styles.chapterPrompt}>Go to {index.schema.sectionNames[0]} (1-{index.schema.lengths[0]})</Text>
           <TextInput
-            autoFocus={!index.alts}
             style={styles.chapterInput}
             keyboardType='number-pad'
             returnKeyType='go'
