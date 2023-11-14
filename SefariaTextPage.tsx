@@ -124,9 +124,7 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
   }, [] )
 
   useEffect(() => {
-    console.debug('Getting contents, ', currentBook.slug, new Date())
     getBookContents(currentBook.slug).then((result) => {
-      console.debug('got contents, ',  currentBook.slug, new Date())
       if (result) {
         setIndex(result)
       }
@@ -141,7 +139,6 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
     }
     if (!lastSection.next) {
       // if there's no next, probably just means we are at the end of the book.
-      console.debug('No next section found in current section', lastSection)
       return
     }
     const {bookname, chapter} = splitBookRef(lastSection.next)
@@ -232,7 +229,6 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
   }, [sections, setSections, setLoadingPrevious])
 
   const onScrollToIndexFailed = (failInfo: {index: number, averageItemLength: number}) => {
-    console.debug('onScrollToIndexFailed, ', failInfo)
     // Note: the error that this handler gives us tells us the index, but not the sectionIndex.
     // Probably this is an oversight by the React Native folks. In any case, our code currently
     // only ever jumps to sectionIndex 0, so we are ok for now.

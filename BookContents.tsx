@@ -95,8 +95,6 @@ export const BookContents = memo(function BookContents({jumpAndClose, index}: Bo
   }, [index.schema.lengths, jumpAndClose])
 
   const svHeight = Math.round(Dimensions.get('window').height) - altViewMargin
-  console.debug('height is ', svHeight)
-  // FixMe: Add a close button, either here or in the container defined in SefariaTextPage. Or maybe that container should be defined here?
   return(
     <View style={styles.topContainer}>
       {/* <View style={styles.subContainer}> */}

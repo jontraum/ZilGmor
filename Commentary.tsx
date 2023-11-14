@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Dimensions, Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import RenderHtml from 'react-native-render-html'
 import { Link, LinkMap } from './data/types'
 import { GetLinks, unGroupedLinkTypes } from './data/bookAPI'
+import { globalStyles } from './styles'
+import { CloseDialogButton } from './buttons/CloseDialogButton'
 
 interface CommentaryProps {
     verseKey: string;
@@ -124,6 +126,10 @@ export function Commentary({verseKey, bookLinks, selectedCommentaries, setSelect
     setSelectingLinks(true)
   }
 
+  const closeCommentarySelection = useCallback( () => {
+    setSelectingLinks(false)
+  }, [setSelectingLinks])
+
   let currentLinks:Link[] = []
   if (linkMap && currentCommentary) {
     currentLinks = linkMap.get(currentCommentary)
@@ -135,32 +141,34 @@ export function Commentary({verseKey, bookLinks, selectedCommentaries, setSelect
     <View style={styles.mainBox}>
       <Modal 
         visible={selectingLinks}
-        onRequestClose={()=>setSelectingLinks(false)}
-                
+        onRequestClose={closeCommentarySelection}
+        transparent={true}
       >
-        <ScrollView>
-          <Text>Add commentary</Text>
-          <View style={styles.linkSelectorBox}>
-            {selectedCommentaries.map( (linkName) => {
-              return (
-                <Pressable key={linkName} onPress={() => unselectLink(linkName)}>
-                  <Text style={[styles.selectLinkButton, styles.selectLinkButtonSelected]}>{linkName}</Text>
-                </Pressable>
-              )
-            })
-            }
-            { bookLinks.map( (linkName, idx) => {
-              if (!selectedCommentaries.includes(linkName)) {
+        <View style={globalStyles.centeredView}>
+          <View style={globalStyles.modalView}>
+            <CloseDialogButton onPress={closeCommentarySelection} />
+            <Text style={globalStyles.dialogHeaderText}>Select Commentaries</Text>
+            <View style={styles.linkSelectorBox}>
+              {selectedCommentaries.map( (linkName) => {
                 return (
-                  <Pressable key={idx} onPress={() => selectLink(linkName)}>
-                    <Text style={[styles.selectLinkButton, styles.selectLinkButtonUnselected]}>{linkName}</Text>
+                  <Pressable key={linkName} onPress={() => unselectLink(linkName)}>
+                    <Text style={[styles.selectLinkButton, styles.selectLinkButtonSelected]}>{linkName}</Text>
                   </Pressable>
                 )
+              })
               }
-            })}
+              { bookLinks.map( (linkName, idx) => {
+                if (!selectedCommentaries.includes(linkName)) {
+                  return (
+                    <Pressable key={idx} onPress={() => selectLink(linkName)}>
+                      <Text style={[styles.selectLinkButton, styles.selectLinkButtonUnselected]}>{linkName}</Text>
+                    </Pressable>
+                  )
+                }
+              })}
+            </View>
           </View>
-        </ScrollView>
-
+        </View>
       </Modal>
       <View style={styles.linkBar} >
         {selectedCommentaries.map( (linkName) => {

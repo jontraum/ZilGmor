@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from 'react'
-import { Pressable, StyleSheet, View, Text } from 'react-native'
-import { MaterialIcons } from '@expo/vector-icons' 
-import { defaultColorScheme } from './styles'
+import { StyleSheet, View } from 'react-native'
+import { defaultColorScheme, globalStyles } from './styles'
+import { CloseDialogButton } from './buttons/CloseDialogButton'
 
 const modalStyles = StyleSheet.create({
   modalActive: {
@@ -30,10 +30,6 @@ const modalStyles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3,
   },
-  closeBox: {
-    top: 15,
-    alignSelf: 'flex-end',
-  },
 })
 
 interface PersistentModalProps {
@@ -48,13 +44,9 @@ interface PersistentModalProps {
 export function PersistentModal({visible, onClose, children}: PropsWithChildren<PersistentModalProps>) {
   return (
     <View style={visible ? modalStyles.modalActive : modalStyles.modalHidden}>
-      <View style={modalStyles.internalView}>
+      <View style={globalStyles.modalView}>
         {onClose && (
-          <View style={modalStyles.closeBox}>
-            <Pressable onPress={onClose}>
-              <MaterialIcons name="close" size={24} color="red" />
-            </Pressable>
-          </View>
+          <CloseDialogButton onPress={onClose} />
         )}
         {children}
       </View>
