@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
 
 // Using React's memo function here to prevent the warning:
 //   "VirtualizedList: You have a large list that is slow to update - make sure your renderItem function renders components that follow React performance best practices like PureComponent, shouldComponentUpdate, etc."
-export const ShowTextItem = memo(function SefariaTextItem ({item, selected, onSelect}: ShowTextItemProps) {
+export const ShowTextItem = memo(function ShowTextItem ({item, selected, onSelect}: ShowTextItemProps) {
   const { textHE, textEN} = item
   return (
     <Pressable onPress={() => onSelect(item)}>

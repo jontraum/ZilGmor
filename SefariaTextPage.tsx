@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, SectionList, StyleSheet, Text, View } from 'react-native'
 import { Ionicons, MaterialIcons } from '@expo/vector-icons' 
 
-import { ShowTextItem } from './SefariaTextItem'
+import { ShowTextItem } from './ShowTextItem'
 import { BookText, getBookContents, getBookText, getNamesOfLinksForBook, splitBookRef } from './data/bookAPI'
 import { BookIndex, BookInfo, TextItem } from './data/types'
 import { Commentary } from './Commentary'
