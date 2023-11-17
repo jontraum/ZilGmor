@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, SectionList, StyleSheet, Text, View } from 'react-native'
 import { Ionicons, MaterialIcons } from '@expo/vector-icons' 
 
-import { SefariaTextItem, SefariaTextItemProps } from './SefariaTextItem'
+import { ShowTextItem } from './SefariaTextItem'
 import { BookText, getBookContents, getBookText, getNamesOfLinksForBook, splitBookRef } from './data/bookAPI'
-import { BookIndex, BookInfo } from './data/types'
+import { BookIndex, BookInfo, TextItem } from './data/types'
 import { Commentary } from './Commentary'
 import { BookContents } from './BookContents'
 import { getBookSettings, saveBookSettings } from './data/settings'
@@ -24,7 +24,7 @@ interface ListSectionContent {
   key: string;
   next: string | null;
   prev: string | null;
-  data: SefariaTextItemProps[];
+  data: TextItem[];
 }
 
 const textPageStyles =  StyleSheet.create({
@@ -68,7 +68,7 @@ function textSectionToListSection(section: BookText): ListSectionContent {
     key: section.title,
     next: section.next,
     prev: section.prev,
-    data: section.he.map( (elementHE, idx): SefariaTextItemProps => {
+    data: section.he.map( (elementHE, idx): TextItem => {
       return {
         textHE: elementHE,
         textEN: section.text[idx],
@@ -81,7 +81,7 @@ function textSectionToListSection(section: BookText): ListSectionContent {
 
 export function SefariaTextPage({currentBook, goToLibrary, showHistory}: SefariaTextPageProps) {
   const [sections, setSections] = useState<ListSectionContent[]>([])
-  const [currentItem, setCurrentItem] = useState<SefariaTextItemProps | null>()
+  const [currentItem, setCurrentItem] = useState<TextItem | null>()
   const [showTOC, setShowTOC] = useState<boolean>(false)
   const [availableLinks, setAvailableLinks] = useState<Array<string>>([])
   const [loadingPrevious, setLoadingPrevious] = useState(false)
@@ -278,7 +278,7 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
                 sections={sections}
                 ref={contentListRef}
                 renderItem={ ({item}) => (
-                  <SefariaTextItem selected={item.key === currentItem?.key} {...item} />
+                  <ShowTextItem selected={(item.key === currentItem?.key)} item={item} onSelect={setCurrentItem} />
                 )}
                 renderSectionHeader={({section}) => {
                   return (

@@ -13,6 +13,15 @@ export interface BookSet {
     books: BookInfo[];
 }
 
+/** A single unit of text: a verse of Tanach, a mishna, a small bit of Gemara, etc */
+export interface TextItem {
+    textHE: string
+    textEN: string
+    itemNumber: number
+    key: string
+    hebrewRef: string
+}
+
 /** A link provided by Sefaria's link API. Used for commentary and other references */
 export interface Link {
     /** ??Where the link is linked from?? */
