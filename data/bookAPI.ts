@@ -51,7 +51,7 @@ function getLinkLabel(link: Link): string {
    * Commentaries are grouped by the individual commentator (Rashi, Tosafos, etc)
    * Other types of links, like quotes from Tanach, Talmud, etc are grouped by link category
    */
-  return unGroupedLinkTypes.includes(link.category) ? link.collectiveTitle.en : link.category
+  return unGroupedLinkTypes.includes(link.category) ? link.collectiveTitle.he : link.category
 }
 
 export function getNamesOfLinksForBook(book: string, chapter: string): Promise<void | Set<string>> {

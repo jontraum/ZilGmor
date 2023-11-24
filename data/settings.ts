@@ -1,8 +1,10 @@
 import * as SQLite from 'expo-sqlite'
+import { Title } from './types'
 
 export interface BookSettings {
   bookSlug: string; // How the book is identified in Sefaria's API
   location: string; // Where in the book we last read
+  label: Title; // Label to use when showing history
   commentaries: string[]; // List of commentaries currently being used with the book.
   lastRead?: Date; // When the user last read the book
 }
@@ -16,6 +18,7 @@ const bookSettingsCreateSQL = `CREATE TABLE IF NOT EXISTS book_settings (
   id INTEGER PRIMARY KEY,
   book_slug TEXT,
   location TEXT,
+  label TEXT,
   commentaries TEXT,
   last_read NUMERIC
   );`
@@ -39,6 +42,7 @@ function rowToBookSettings(row) : BookSettings {
     bookSlug: row.book_slug as string,
     location: row.location as string,
     commentaries: (row.commentaries as string).split('\t'),
+    label: JSON.parse(row.label),
     lastRead: new Date(row.last_read as number),
   }
 }
@@ -67,14 +71,15 @@ export function getBookSettings(bookSlug: string) : Promise<BookSettings | null 
 }
 
 export function saveBookSettings(settings: BookSettings) {
-  const values = [settings.location, settings.commentaries.join('\t'), settings.lastRead.getTime(), settings.bookSlug]
+  const titleJSON = JSON.stringify(settings.label)
+  const values = [settings.location, titleJSON, settings.commentaries.join('\t'), settings.lastRead.getTime(), settings.bookSlug]
   return db.transactionAsync(tx =>{
-    return tx.executeSqlAsync('update book_settings set location = ?, commentaries = ?, last_read = ? where book_slug = ?',
+    return tx.executeSqlAsync('update book_settings set location = ?, label = ?, commentaries = ?, last_read = ? where book_slug = ?',
       values,
     ).then(result => {
       if(result.rowsAffected < 1) {
         // No rows updated. Must mean we need to insert
-        tx.executeSqlAsync('insert into book_settings(location, commentaries, last_read, book_slug) values (?, ?, ?, ?)', values)
+        tx.executeSqlAsync('insert into book_settings(location, label, commentaries, last_read, book_slug) values (?, ?, ?, ?, ?)', values)
       }
     })
   })

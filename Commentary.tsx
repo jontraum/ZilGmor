@@ -27,9 +27,11 @@ const styles = StyleSheet.create({
     flexWrap:'wrap',
   },
   selectLinkButton: {
-    padding: 2,
+    padding: 6,
     margin: 2,
     borderWidth: 2,
+    borderRadius: 5,
+    textAlign: 'center',
   },
   selectLinkButtonUnselected: {
     borderColor: '#28f',

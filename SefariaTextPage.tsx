@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, SectionList, StyleSheet, Text, View } from 'react-native'
-import { Ionicons, MaterialIcons } from '@expo/vector-icons' 
+import { MaterialIcons } from '@expo/vector-icons' 
 
 import { ShowTextItem } from './ShowTextItem'
 import { BookText, getBookContents, getBookText, getNamesOfLinksForBook, splitBookRef } from './data/bookAPI'
@@ -11,6 +11,7 @@ import { getBookSettings, saveBookSettings } from './data/settings'
 import { globalStyles, topButtonSize } from './styles'
 import { HistoryButton } from './buttons/HistoryButton'
 import { PersistentModal } from './PersistentModal'
+import { LibraryButton } from './buttons/LibraryButton'
 
 interface SefariaTextPageProps {
   currentBook: BookInfo;
@@ -74,6 +75,7 @@ function textSectionToListSection(section: BookText): ListSectionContent {
         textEN: section.text[idx],
         itemNumber: idx,
         key: `${section.sectionRef}:${(1 + idx).toString()}`,
+        hebrewRef: `${section.heSectionRef}:${(1 + idx).toString()}`,
       }
     }),
   }
@@ -187,6 +189,7 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
       saveBookSettings({
         bookSlug: currentBook.slug,
         location,
+        label: {en: currentItem.key, he: currentItem.hebrewRef},
         commentaries: selectedCommentaries,
         lastRead: new Date(),
       })
@@ -263,8 +266,8 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
       </PersistentModal>
       <View style={textPageStyles.topContainer}>
         <View style={globalStyles.pageHeaderContainer}>
-          <Ionicons name="library" size={topButtonSize} color="black" onPress={goToLibrary} />
-          <Text style={globalStyles.pageHeaderText}>{currentItem?.key}</Text>
+          <LibraryButton onPress={goToLibrary} />
+          <Text style={globalStyles.pageHeaderText}>{currentItem?.hebrewRef || currentItem?.key || currentBook.title.he || currentBook.title.en}</Text>
           <View style={globalStyles.headerButtonBox}>
             <HistoryButton onPress={showHistory} />
             <MaterialIcons name="toc" size={topButtonSize} color="black" onPress={() => setShowTOC(!showTOC)} />

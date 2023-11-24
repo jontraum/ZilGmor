@@ -1,13 +1,26 @@
 import React, { useEffect, useState } from 'react'
-import {Pressable, ScrollView, Text, View} from 'react-native'
+import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native'
 import { BookSettings, getHistory } from './data/settings'
-import { globalStyles } from './styles'
+import { globalStyles, topButtonSize } from './styles'
 import { LibraryButton } from './buttons/LibraryButton'
+import { MaterialIcons } from '@expo/vector-icons' 
 
 interface SeferHistoryProps {
   loadBook: (bookSlug: string) => void;
   goToLibrary: () => void;
 }
+
+const styles = StyleSheet.create({
+  mainView: {
+    flexDirection: 'column',
+  },
+  historyList: {
+    flexDirection: 'row',
+  },
+  historyItem: {
+    flexDirection: 'row',
+  },
+})
 
 export function SeferHistory({loadBook, goToLibrary}: SeferHistoryProps) {
   const [historyList, setHistoryList] = useState<BookSettings[] | null>()
@@ -30,17 +43,20 @@ export function SeferHistory({loadBook, goToLibrary}: SeferHistoryProps) {
   }
   else {
     return (
-      <View  style={{flexDirection: 'column'}}>
+      <View  style={styles.mainView}>
         <View style={globalStyles.pageHeaderContainer}>
           <LibraryButton onPress={goToLibrary} />
           <Text style={globalStyles.pageHeaderText}>History</Text>
+          <View style={globalStyles.headerButtonBox}>
+            <MaterialIcons name="toc" size={topButtonSize} color="black" onPress={() => console.debug('toc') }/>
+          </View>
         </View>
-        <ScrollView>
+        <ScrollView style={styles.historyList}>
           { historyList.map( (item, itemNum) => {
             return (
-              <View style={{flexDirection: 'column' }}key={itemNum}>
+              <View style={styles.historyItem}key={itemNum}>
                 <Pressable onPress={() => loadBook(item.bookSlug)} >
-                  <Text style={globalStyles.bookButton}>{item.bookSlug} {item.location}</Text>
+                  <Text style={globalStyles.bookButton}>{item.label.he || item.label.en}</Text>
                 </Pressable>
               </View>
             )
