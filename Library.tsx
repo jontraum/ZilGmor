@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text, ScrollView, StyleSheet } from 'react-native'
-import { HistoryButton } from './buttons/HistoryButton'
+import { HistoryButton } from './UIComponents/buttons/HistoryButton'
 import { globalStyles } from './styles'
 import { fullIndex } from './data/bookIndexes'
 import { LibrarySection } from './LibrarySection'

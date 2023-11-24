@@ -9,9 +9,9 @@ import { Commentary } from './Commentary'
 import { BookContents } from './BookContents'
 import { getBookSettings, saveBookSettings } from './data/settings'
 import { globalStyles, topButtonSize } from './styles'
-import { HistoryButton } from './buttons/HistoryButton'
+import { HistoryButton } from './UIComponents/buttons/HistoryButton'
 import { PersistentModal } from './PersistentModal'
-import { LibraryButton } from './buttons/LibraryButton'
+import { LibraryButton } from './UIComponents/buttons/LibraryButton'
 
 interface SefariaTextPageProps {
   currentBook: BookInfo;

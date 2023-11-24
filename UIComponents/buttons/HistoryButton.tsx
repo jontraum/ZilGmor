@@ -1,6 +1,6 @@
 import React from 'react'
 import {MaterialIcons} from '@expo/vector-icons' 
-import { topButtonSize } from '../styles'
+import { topButtonSize } from '../../styles'
 import { Pressable } from 'react-native'
 
 interface HistoryButtonProps {

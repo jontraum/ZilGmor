@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native'
 import { BookSettings, getHistory } from './data/settings'
 import { globalStyles, topButtonSize } from './styles'
-import { LibraryButton } from './buttons/LibraryButton'
+import { LibraryButton } from './UIComponents/buttons/LibraryButton'
 import { MaterialIcons } from '@expo/vector-icons' 
 
 interface SeferHistoryProps {

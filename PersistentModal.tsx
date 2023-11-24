@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { defaultColorScheme, globalStyles } from './styles'
-import { CloseDialogButton } from './buttons/CloseDialogButton'
+import { CloseDialogButton } from './UIComponents/buttons/CloseDialogButton'
 
 const modalStyles = StyleSheet.create({
   modalActive: {

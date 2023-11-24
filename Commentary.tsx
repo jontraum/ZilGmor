@@ -5,7 +5,7 @@ import RenderHtml from 'react-native-render-html'
 import { Link, LinkMap } from './data/types'
 import { GetLinks, unGroupedLinkTypes } from './data/bookAPI'
 import { globalStyles } from './styles'
-import { CloseDialogButton } from './buttons/CloseDialogButton'
+import { CloseDialogButton } from './UIComponents/buttons/CloseDialogButton'
 
 interface CommentaryProps {
     verseKey: string;
