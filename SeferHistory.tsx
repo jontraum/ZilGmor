@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from 'react'
-import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native'
+import {Pressable, StyleSheet, Text, View} from 'react-native'
 import { BookSettings, getHistory } from './data/settings'
-import { globalStyles, topButtonSize } from './styles'
-import { LibraryButton } from './UIComponents/buttons/LibraryButton'
-import { MaterialIcons } from '@expo/vector-icons' 
+import { globalStyles } from './styles'
+import { Dialog } from './UIComponents/Dialog'
+import { BookInfo } from './data/types'
 
 interface SeferHistoryProps {
-  loadBook: (bookSlug: string) => void;
-  goToLibrary: () => void;
+  loadBook: (book: BookInfo) => void
+  onClose: () => void
+  visible: boolean
+}
+
+function historyItemToBookInfo(item: BookSettings) : BookInfo {
+  return {
+    slug: item.bookSlug,
+    title: item.label,
+  }
 }
 
 const styles = StyleSheet.create({
@@ -15,21 +23,22 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   historyList: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
+    flexWrap: 'wrap',
   },
   historyItem: {
     flexDirection: 'row',
   },
 })
 
-export function SeferHistory({loadBook, goToLibrary}: SeferHistoryProps) {
+export function SeferHistory({loadBook, onClose, visible}: SeferHistoryProps) {
   const [historyList, setHistoryList] = useState<BookSettings[] | null>()
 
   useEffect( () => {
     getHistory().then( (result) => {
       setHistoryList(result)
     })
-  }, [])
+  }, [visible])
 
   if (!historyList) {
     return (
@@ -43,26 +52,19 @@ export function SeferHistory({loadBook, goToLibrary}: SeferHistoryProps) {
   }
   else {
     return (
-      <View  style={styles.mainView}>
-        <View style={globalStyles.pageHeaderContainer}>
-          <LibraryButton onPress={goToLibrary} />
-          <Text style={globalStyles.pageHeaderText}>History</Text>
-          <View style={globalStyles.headerButtonBox}>
-            <MaterialIcons name="toc" size={topButtonSize} color="black" onPress={() => console.debug('toc') }/>
-          </View>
-        </View>
-        <ScrollView style={styles.historyList}>
+      <Dialog visible={visible} onClose={onClose} title="History">
+        <View style={styles.historyList}>
           { historyList.map( (item, itemNum) => {
             return (
               <View style={styles.historyItem}key={itemNum}>
-                <Pressable onPress={() => loadBook(item.bookSlug)} >
+                <Pressable onPress={() => loadBook(historyItemToBookInfo(item))} >
                   <Text style={globalStyles.bookButton}>{item.label.he || item.label.en}</Text>
                 </Pressable>
               </View>
             )
           }) }
-        </ScrollView>
-      </View>
+        </View>
+      </Dialog>
     )
   }
 }

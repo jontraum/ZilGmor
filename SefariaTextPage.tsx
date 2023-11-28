@@ -12,11 +12,12 @@ import { globalStyles, topButtonSize } from './styles'
 import { HistoryButton } from './UIComponents/buttons/HistoryButton'
 import { PersistentModal } from './PersistentModal'
 import { LibraryButton } from './UIComponents/buttons/LibraryButton'
+import { SeferHistory } from './SeferHistory'
 
 interface SefariaTextPageProps {
   currentBook: BookInfo;
   goToLibrary: () => void;
-  showHistory: () => void;
+  setCurrentBook: (book: BookInfo) => void;
 }
 
 interface ListSectionContent {
@@ -81,7 +82,7 @@ function textSectionToListSection(section: BookText): ListSectionContent {
   }
 }
 
-export function SefariaTextPage({currentBook, goToLibrary, showHistory}: SefariaTextPageProps) {
+export function SefariaTextPage({currentBook, goToLibrary, setCurrentBook}: SefariaTextPageProps) {
   const [sections, setSections] = useState<ListSectionContent[]>([])
   const [currentItem, setCurrentItem] = useState<TextItem | null>()
   const [showTOC, setShowTOC] = useState<boolean>(false)
@@ -91,7 +92,10 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
   const [selectedCommentaries, setSelectedCommentaries] = useState<string[]>([])
   const contentListRef = useRef<null | SectionList>()
   const [index, setIndex] = useState<BookIndex | null>()
-  
+  const [showingHistory, setShowingHistory] = useState(false)
+  const showHistory = () => setShowingHistory(true)
+  const hideHistory = () => setShowingHistory(false)
+
   const addLinkNames = (book: string, chapter: string) => {
     getNamesOfLinksForBook(book, chapter)
       .then( linkNames => {
@@ -105,27 +109,23 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
           }
         }
         if (newValues.length > 0) {
-          setAvailableLinks([...availableLinks, ...newValues])
+          setAvailableLinks([...availableLinks, ...newValues].sort())
         }
       })
   }
 
   useEffect(() => {
-    // On initial load, load up the first page and set the first item as current.
-    let startingPage = '2a' // ToDo: better logic for default start. 2a works for Gemara, probably not much else.
+    // On initial load, or when we change books, load up the first page and set the first item as current.
     getBookSettings(currentBook.slug)
       .then((settings) => {
         if (settings?.location) {
-          startingPage = settings.location
           setSelectedCommentaries(settings.commentaries)
-          jumpToLocation(startingPage)
+          jumpToLocation(settings.location)
         } else {
           setShowTOC(true)
         }
       })
-  }, [] )
 
-  useEffect(() => {
     getBookContents(currentBook.slug).then((result) => {
       if (result) {
         setIndex(result)
@@ -153,11 +153,11 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
   }, [sections, setSections])
 
   const jumpToLocation = (location: string) => {
-    // ToDo: Put up spinner which will get cleared when promise completes.
     if (!location) {
       console.warn('No location given to jumpToLocation')
       return
     }
+    setSections([])
     const [chapter, verses] = location.split(':')
     const [firstVerse] = verses ? verses.split('-') : ['1']
     getBookText(currentBook.slug, chapter).then((result) => {
@@ -180,6 +180,17 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
       }
     })
     addLinkNames(currentBook.slug, location)
+  }
+
+  const goToBook = (book: BookInfo) => {
+    hideHistory()
+    if (book.slug === currentBook.slug) {
+      // Not changing the book, so nothing else to do
+      return
+    }
+    setCurrentBook(book)
+    setSections([]) // Clear out contents of previous book
+    setAvailableLinks([]) // Clear out previous links from any previously-loaded book
   }
 
   // Save settings when stuff changes
@@ -264,6 +275,7 @@ export function SefariaTextPage({currentBook, goToLibrary, showHistory}: Sefaria
       <PersistentModal visible={showTOC} onClose={onTOCClose}>
         {contents}
       </PersistentModal>
+      <SeferHistory loadBook={goToBook} visible={showingHistory} onClose={hideHistory} />
       <View style={textPageStyles.topContainer}>
         <View style={globalStyles.pageHeaderContainer}>
           <LibraryButton onPress={goToLibrary} />

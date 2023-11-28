@@ -1,6 +1,7 @@
 import React from 'react'
 import {MaterialIcons} from '@expo/vector-icons' 
 import { Pressable, StyleSheet, View } from 'react-native'
+import { ButtonProps } from './ButtonProps'
 
 const styles = StyleSheet.create({
   closeBox: {
@@ -9,7 +10,7 @@ const styles = StyleSheet.create({
   },
 })
 
-export function CloseDialogButton({onPress}) {
+export function CloseDialogButton({onPress}: ButtonProps) {
   return (
     <View style={styles.closeBox}>
       <Pressable onPress={onPress}>

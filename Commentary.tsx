@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Dimensions, Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
+import { Dimensions, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import RenderHtml from 'react-native-render-html'
 import { Link, LinkMap } from './data/types'
 import { GetLinks, unGroupedLinkTypes } from './data/bookAPI'
-import { globalStyles } from './styles'
-import { CloseDialogButton } from './UIComponents/buttons/CloseDialogButton'
+import { Dialog } from './UIComponents/Dialog'
 
 interface CommentaryProps {
     verseKey: string;
@@ -23,7 +22,7 @@ const styles = StyleSheet.create({
     paddingTop: 2,
   },
   linkSelectorBox: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     flexWrap:'wrap',
   },
   selectLinkButton: {
@@ -87,12 +86,10 @@ const styles = StyleSheet.create({
   },
 })
 
-const rashi = {'en': 'Rashi', 'he': 'רש"י'}
-
 export function Commentary({verseKey, bookLinks, selectedCommentaries, setSelectedCommentaries}: CommentaryProps) {
   const [linkMap, setLinkMap] = useState<LinkMap>()
   // Temporarily defaulting commentary to Rashi.
-  const [currentCommentary, setCurrentCommentary] = useState<string>(rashi.en)
+  const [currentCommentary, setCurrentCommentary] = useState<string>(selectedCommentaries[0])
 
   const [selectingLinks, setSelectingLinks] = useState<boolean>(false)
 
@@ -108,6 +105,13 @@ export function Commentary({verseKey, bookLinks, selectedCommentaries, setSelect
         }
       })
   }, [verseKey])
+
+  // If the current commentary is not one of the selected commentaries, auto-select the zeroth
+  useEffect( () => {
+    if (!currentCommentary || !selectedCommentaries.includes(currentCommentary)) {
+      setCurrentCommentary(selectedCommentaries[0])
+    }
+  }, [selectedCommentaries])
 
   function selectLink(linkName: string) {
     // Don't add it if it's already there.
@@ -141,37 +145,31 @@ export function Commentary({verseKey, bookLinks, selectedCommentaries, setSelect
   }
   return (
     <View style={styles.mainBox}>
-      <Modal 
+      <Dialog 
         visible={selectingLinks}
-        onRequestClose={closeCommentarySelection}
-        transparent={true}
+        onClose={closeCommentarySelection}
+        title="Select Commentaries/Links"
       >
-        <View style={globalStyles.centeredView}>
-          <View style={globalStyles.modalView}>
-            <CloseDialogButton onPress={closeCommentarySelection} />
-            <Text style={globalStyles.dialogHeaderText}>Select Commentaries</Text>
-            <View style={styles.linkSelectorBox}>
-              {selectedCommentaries.map( (linkName) => {
-                return (
-                  <Pressable key={linkName} onPress={() => unselectLink(linkName)}>
-                    <Text style={[styles.selectLinkButton, styles.selectLinkButtonSelected]}>{linkName}</Text>
-                  </Pressable>
-                )
-              })
-              }
-              { bookLinks.map( (linkName, idx) => {
-                if (!selectedCommentaries.includes(linkName)) {
-                  return (
-                    <Pressable key={idx} onPress={() => selectLink(linkName)}>
-                      <Text style={[styles.selectLinkButton, styles.selectLinkButtonUnselected]}>{linkName}</Text>
-                    </Pressable>
-                  )
-                }
-              })}
-            </View>
-          </View>
+        <View style={styles.linkSelectorBox}>
+          {selectedCommentaries.map( (linkName) => {
+            return (
+              <Pressable key={linkName} onPress={() => unselectLink(linkName)}>
+                <Text style={[styles.selectLinkButton, styles.selectLinkButtonSelected]}>{linkName}</Text>
+              </Pressable>
+            )
+          })
+          }
+          { bookLinks.map( (linkName, idx) => {
+            if (!selectedCommentaries.includes(linkName)) {
+              return (
+                <Pressable key={idx} onPress={() => selectLink(linkName)}>
+                  <Text style={[styles.selectLinkButton, styles.selectLinkButtonUnselected]}>{linkName}</Text>
+                </Pressable>
+              )
+            }
+          })}
         </View>
-      </Modal>
+      </Dialog>
       <View style={styles.linkBar} >
         {selectedCommentaries.map( (linkName) => {
           let numItems = 0

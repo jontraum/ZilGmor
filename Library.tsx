@@ -1,13 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { View, Text, ScrollView, StyleSheet } from 'react-native'
 import { HistoryButton } from './UIComponents/buttons/HistoryButton'
 import { globalStyles } from './styles'
 import { fullIndex } from './data/bookIndexes'
 import { LibrarySection } from './LibrarySection'
 import { BookInfo } from './data/types'
+import { SeferHistory } from './SeferHistory'
 
 interface LibraryArgs {
-  showHistory: () => void;
   setCurrentBook: (book: BookInfo) => void;
 }
 
@@ -17,7 +17,11 @@ const styles = StyleSheet.create({
   },
 })
 
-export function Library({showHistory, setCurrentBook}: LibraryArgs) {
+export function Library({setCurrentBook}: LibraryArgs) {
+  const [showingHistory, setShowingHistory] = useState(false)
+  const showHistory = () => setShowingHistory(true)
+  const hideHistory = () => setShowingHistory(false)
+
   return (
     <View style={styles.mainContainer}>
       <View style={globalStyles.pageHeaderContainer}>
@@ -25,6 +29,7 @@ export function Library({showHistory, setCurrentBook}: LibraryArgs) {
         <Text style={globalStyles.pageHeaderText}>ZilGmor Library</Text>
         <HistoryButton onPress={showHistory} />
       </View>
+      <SeferHistory loadBook={setCurrentBook} visible={showingHistory} onClose={hideHistory} />
       <ScrollView>
         { fullIndex.map( (section, num) => {
           return (
