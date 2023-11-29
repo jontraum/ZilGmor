@@ -52,7 +52,6 @@ const textPageStyles =  StyleSheet.create({
   },
   primaryTextContainer: {
     flex: 5,
-    marginBottom: 2,
     zIndex: 2,
   },
   linksContainer: {

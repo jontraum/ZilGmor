@@ -33,7 +33,7 @@ export async function initializeDB() {
       tx.executeSql(bookSettingsCreateIndexSQL)
     },
     (error) => { console.log('db error creating tables'); console.log(error); reject(error) },
-    () => { console.debug('successfully initialized!'); resolve('success')},
+    () => { resolve('success') },
     )
   })
 }
@@ -55,7 +55,6 @@ function rowToBookSettings(row) : BookSettings {
     label: label,
     lastRead: new Date(row.last_read as number),
   }
-  console.debug('rowToBookSettings got', retval)
   return retval
 }
 
@@ -66,7 +65,6 @@ export function getBookSettings(bookSlug: string) : Promise<BookSettings | null 
         .then( results => {
           if (results.rows) {
             if (results.rows.length > 0) {
-              console.log('got booksettings row:', results.rows[0])
               resolve(rowToBookSettings(results.rows[0]))
             }
             else {
@@ -86,7 +84,6 @@ export function getBookSettings(bookSlug: string) : Promise<BookSettings | null 
 export function saveBookSettings(settings: BookSettings) {
   const titleJSON = JSON.stringify(settings.label)
   const values = [settings.location, titleJSON, settings.commentaries.join('\t'), settings.lastRead.getTime(), settings.bookSlug]
-  console.debug('saving settings', values)
   return db.transactionAsync(tx =>{
     return tx.executeSqlAsync('update book_settings set location = ?, label = ?, commentaries = ?, last_read = ? where book_slug = ?',
       values,

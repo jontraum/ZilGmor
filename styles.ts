@@ -1,5 +1,7 @@
 import { StyleSheet } from 'react-native'
 
+export const horizontalMargin = 5
+
 export const defaultColorScheme = {
   backgroundColor: '#fff',
   color: '#000',
@@ -10,11 +12,11 @@ export const defaultColorScheme = {
 
 export const globalStyles = StyleSheet.create({
   pageHeaderContainer: {
-    height: 50,
-    // flex: 0.1,
+    height: 40,
     flexDirection: 'row',
     justifyContent: 'space-between',
     margin: 5,
+    paddingTop: 5,
   },
   pageHeaderText: {
     fontWeight: 'bold',

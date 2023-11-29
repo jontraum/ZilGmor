@@ -2,6 +2,7 @@ import React, { memo } from 'react'
 import { View, StyleSheet, Dimensions, Pressable } from 'react-native'
 import RenderHtml from 'react-native-render-html'
 import { TextItem } from './data/types'
+import { horizontalMargin } from './styles'
 // Keeping these old imports to remember these alternatives, in case I want to go back to them later
 // If you're still reading this after the end of 2023, should probably just get rid of these!
 // import {WebView} from 'react-native-webview';
@@ -20,7 +21,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     flex: 1,
     justifyContent: 'space-between',
-    padding: 1,
+    paddingHorizontal: horizontalMargin,
     fontSize: 20,
   },
   textView: {
@@ -58,8 +59,9 @@ export const ShowTextItem = memo(function ShowTextItem ({item, selected, onSelec
         { textHE && (
           <RenderHtml baseStyle={styles.hebrew} contentWidth={styles.textView.width} source={{ html: textHE }} />
         )}
+        {/* English text sometimes has Hebrew mixed in, so put left-to-right marker &lrm; in front of it to prevent formatting issues */}
         { textEN && (
-          <RenderHtml baseStyle={styles.english} contentWidth={styles.textView.width} source={{ html: textEN }} />
+          <RenderHtml baseStyle={styles.english} contentWidth={styles.textView.width} source={{ html: '&lrm;' + textEN }} />
         )}
       </View>
     </Pressable>

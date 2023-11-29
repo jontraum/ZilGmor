@@ -5,6 +5,7 @@ import RenderHtml from 'react-native-render-html'
 import { Link, LinkMap } from './data/types'
 import { GetLinks, unGroupedLinkTypes } from './data/bookAPI'
 import { Dialog } from './UIComponents/Dialog'
+import { horizontalMargin } from './styles'
 
 interface CommentaryProps {
     verseKey: string;
@@ -65,8 +66,11 @@ const styles = StyleSheet.create({
   },
   linkPane: {
     flex: 16,
-    padding: 3,
+    paddingHorizontal: horizontalMargin,
     width: Dimensions.get('window').width - 2,
+  },
+  linkTextView: {
+    marginBottom: 6,
   },
   hebrewText: {
     fontFamily: 'serif',
@@ -195,7 +199,7 @@ export function Commentary({verseKey, bookLinks, selectedCommentaries, setSelect
           const linkTextHe = typeof(linkItem.he) === 'string' ? linkItem.he : linkItem.he.join(' ')
           const linkTextEn = typeof(linkItem.text) === 'string' ? linkItem.text: linkItem.text.join(' ')
           return (
-            <View key={idx}>
+            <View style={styles.linkTextView} key={idx}>
               { linkTextHe?.length > 0 && (
                 <>
                   { !unGroupedLinkTypes.includes(linkItem.category) && (
@@ -209,7 +213,8 @@ export function Commentary({verseKey, bookLinks, selectedCommentaries, setSelect
                   { !unGroupedLinkTypes.includes(linkItem.category) && (
                     <Text style={styles.englishSourceLabel}>{linkItem.sourceRef}</Text>
                   )}
-                  <RenderHtml baseStyle={styles.englishText} contentWidth={dimensions.width - 4} source={{html: linkTextEn}} />
+                  {/* English text sometimes has Hebrew mixed in, so put left-to-right marker &lrm; in front of it to prevent formatting issues */}
+                  <RenderHtml baseStyle={styles.englishText} contentWidth={dimensions.width - 4} source={{html: '&lrm;' + linkTextEn}} />
                 </>
               ) }
             </View>

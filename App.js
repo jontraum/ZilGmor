@@ -1,4 +1,4 @@
-import { StyleSheet, View, StatusBar } from 'react-native'
+import { StyleSheet, SafeAreaView, StatusBar } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import { SefariaTextPage } from './SefariaTextPage'
 import { Library } from './Library'
@@ -34,23 +34,21 @@ export default function App () {
 
   if (currentBook) {
     return (
-      <View style={styles.container}>
-        {/* <View style={styles.tools}>
-            <AntDesign name="pluscircleo" size={36} color="black" onPress={() => setSize(size+1)}/>
-            <AntDesign name="minuscircleo" size={36} color="black" onPress={() => setSize(size-1)}/>
-        </View> */}
+      <SafeAreaView style={styles.container}>
+        <StatusBar hidden={false} translucent={true} style="dark"/>
         <SefariaTextPage
           currentBook={currentBook}
           goToLibrary={goToLibrary}
           setCurrentBook={setCurrentBook}
         />
-      </View>
+      </SafeAreaView>
     )
   } else {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar hidden={false} translucent={true} />
         <Library setCurrentBook={setCurrentBook} />
-      </View>
+      </SafeAreaView>
     )
   }
 }
@@ -61,12 +59,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: StatusBar.currentHeight, // or maybe from Expo: Constants.statusBarHeight,
-  },
-  tools: {
-    flex: 1,
-    flexDirection: 'row',
-    height: 16,
-    marginTop: 10,
+    marginTop: StatusBar.currentHeight,
   },
 })
