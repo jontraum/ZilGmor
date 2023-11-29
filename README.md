@@ -1,3 +1,4 @@
+בס"ד
 # ZilGmor
 ZilGmor is a mobile app for reading and studying Jewish holy texts. The current version supports Tanach (the Jewish Bible), Mishna, and Talmud Bavli along with many commentaries. Future versions will support even more. The app currently requires internet access, as it gets its content from the [Sefaria Project's](https://www.sefaria.org/) open [API](https://github.com/Sefaria/Sefaria-Project/wiki#developers).
 
