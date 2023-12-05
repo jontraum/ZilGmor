@@ -12,5 +12,8 @@ Yes there is. You can find it in the Goole Play and Apple app stores. It is very
 - Sefaria's text layout has H U M O N G O U S margins which make inefficent use of small screens. ZilGmor uses the limited space more effectively to display more text at at a time
 - Sefaria loads rather slowly, not only when initializing the app, but also when loading a book
 
+## You're using Sefaria's content in your app? Is that kosher?
+Yes! Sefaria [encourages](https://github.com/Sefaria/Sefaria-Project/wiki/Projects-Powered-by-Sefaria) others to user their content, for which I am extremely grateful.
+
 ## ZilGmor? What does that even mean?
 The name comes from a [famous story from the Talmud](https://www.sefaria.org/Shabbat.31a.6?lang=bi&with=all&lang2=en) in which a gentile makes a request to be converted to Judaism on the condition that he be taught the entire Torah while he stands on one foot. The great sage Hillel told him "That which is hateful to you do not do to another; that is the entire Torah, and the rest is its interpretation. Go study." In the original Aramaic, that last bit "Go Study" is "Zil Gmor".
