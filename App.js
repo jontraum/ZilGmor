@@ -4,6 +4,7 @@ import { SefariaTextPage } from './SefariaTextPage'
 import { Library } from './Library'
 import { getHistory, initializeDB } from './data/settings'
 import * as SplashScreen from 'expo-splash-screen'
+import { defaultColorScheme } from './styles'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -35,7 +36,7 @@ export default function App () {
   if (currentBook) {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar hidden={false} translucent={true} style="dark"/>
+        <StatusBar hidden={false} barStyle='dark-content' translucent={true} backgroundColor={defaultColorScheme.backgroundColor}/>
         <SefariaTextPage
           currentBook={currentBook}
           goToLibrary={goToLibrary}
@@ -46,7 +47,7 @@ export default function App () {
   } else {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar hidden={false} translucent={true} />
+        <StatusBar hidden={false} barStyle='dark-content' translucent={true} backgroundColor={defaultColorScheme.backgroundColor}/>
         <Library setCurrentBook={setCurrentBook} />
       </SafeAreaView>
     )
