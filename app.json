@@ -1,8 +1,10 @@
 {
   "expo": {
     "name": "ZilGmor",
+    "description": "Study Jewish texts and their commentaries from the Sefaria.org library",
     "slug": "ZilGmor",
     "version": "1.0.0",
+    "githubUrl": "https://github.com/jontraum/ZilGmor",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -22,7 +24,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "us.traumatic.ZilGmor"
+      "package": "us.traumatic.ZilGmor",
+      "blockedPermissions": [
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
