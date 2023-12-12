@@ -154,25 +154,27 @@ export function Commentary({verseKey, bookLinks, selectedCommentaries, setSelect
         onClose={closeCommentarySelection}
         title="Select Commentaries/Links"
       >
-        <View style={styles.linkSelectorBox}>
-          {selectedCommentaries.map( (linkName) => {
-            return (
-              <Pressable key={linkName} onPress={() => unselectLink(linkName)}>
-                <Text style={[styles.selectLinkButton, styles.selectLinkButtonSelected]}>{linkName}</Text>
-              </Pressable>
-            )
-          })
-          }
-          { bookLinks.map( (linkName, idx) => {
-            if (!selectedCommentaries.includes(linkName)) {
+        <ScrollView style={{flexGrow: 0, maxHeight: Math.round(Dimensions.get('window').height)}}>
+          <View style={styles.linkSelectorBox}>
+            {selectedCommentaries.map( (linkName) => {
               return (
-                <Pressable key={idx} onPress={() => selectLink(linkName)}>
-                  <Text style={[styles.selectLinkButton, styles.selectLinkButtonUnselected]}>{linkName}</Text>
+                <Pressable key={linkName} onPress={() => unselectLink(linkName)}>
+                  <Text style={[styles.selectLinkButton, styles.selectLinkButtonSelected]}>{linkName}</Text>
                 </Pressable>
               )
+            })
             }
-          })}
-        </View>
+            { bookLinks.map( (linkName, idx) => {
+              if (!selectedCommentaries.includes(linkName)) {
+                return (
+                  <Pressable key={idx} onPress={() => selectLink(linkName)}>
+                    <Text style={[styles.selectLinkButton, styles.selectLinkButtonUnselected]}>{linkName}</Text>
+                  </Pressable>
+                )
+              }
+            })}
+          </View>
+        </ScrollView>
       </Dialog>
       <View style={styles.linkBar} >
         {selectedCommentaries.map( (linkName) => {
