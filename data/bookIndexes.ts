@@ -48,6 +48,12 @@ export const tanach: BookInfo[] = [
   // { title: { he: '', en: ''}, slug: ''},
 ]
 
+export const tanachMap = {}
+tanach.forEach(book => tanachMap[book.slug] = book)
+export function isTanach(slug: string):boolean {
+  return !!tanachMap[slug]
+}
+
 export const mishnah: BookInfo[] = [
   // סדר זרעים
   { title: { he: 'ברכות', en: 'Berakhot' }, slug: 'Mishnah Berakhot' },

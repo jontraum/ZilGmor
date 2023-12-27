@@ -3,7 +3,8 @@ import { ActivityIndicator, SectionList, StyleSheet, Text, View } from 'react-na
 import { MaterialIcons } from '@expo/vector-icons' 
 
 import { ShowTextItem } from './ShowTextItem'
-import { BookText, getBookContents, getBookText, getNamesOfLinksForBook, splitBookRef } from './data/bookAPI'
+import { getBookContents, getBookText, getNamesOfLinksForBook, splitBookRef } from './data/bookAPI'
+import { BookText, TextVersion } from './data/types'
 import { BookIndex, BookInfo, TextItem } from './data/types'
 import { Commentary } from './Commentary'
 import { BookContents } from './BookContents'
@@ -13,6 +14,8 @@ import { HistoryButton } from './UIComponents/buttons/HistoryButton'
 import { PersistentModal } from './PersistentModal'
 import { LibraryButton } from './UIComponents/buttons/LibraryButton'
 import { SeferHistory } from './SeferHistory'
+import { SelectTranslation } from './SelectTranslation'
+import { TranslationButton } from './UIComponents/buttons/TranslationButton'
 
 interface SefariaTextPageProps {
   currentBook: BookInfo;
@@ -86,6 +89,9 @@ export function SefariaTextPage({currentBook, goToLibrary, setCurrentBook}: Sefa
   const [currentItem, setCurrentItem] = useState<TextItem | null>()
   const [showTOC, setShowTOC] = useState<boolean>(false)
   const [availableLinks, setAvailableLinks] = useState<Array<string>>([])
+  const [availableVersions, setAvailableVersions] = useState<Array<TextVersion>>([])
+  const [showingTranslations, setShowingTranslations] = useState<boolean>(false)
+  const [currentTranslation, setCurrentTranslation] = useState<string | null>(null)
   const [loadingPrevious, setLoadingPrevious] = useState(false)
   // Commentaries that the user selects, stored in local state, and saved to settings via a UseEffect
   const [selectedCommentaries, setSelectedCommentaries] = useState<string[]>([])
@@ -113,13 +119,21 @@ export function SefariaTextPage({currentBook, goToLibrary, setCurrentBook}: Sefa
       })
   }
 
+
+  function keyToLocation(key: string) {
+    return key.replace(currentBook.slug + ' ', '')
+  }
+
   useEffect(() => {
     // On initial load, or when we change books, load up the first page and set the first item as current.
     getBookSettings(currentBook.slug)
       .then((settings) => {
-        if (settings?.location) {
+        if (settings) {
+          setCurrentTranslation(settings.translation)
           setSelectedCommentaries(settings.commentaries)
-          jumpToLocation(settings.location)
+        }
+        if (settings?.location) {
+          jumpToLocation(settings.location, settings.translation)
         } else {
           setShowTOC(true)
         }
@@ -143,15 +157,16 @@ export function SefariaTextPage({currentBook, goToLibrary, setCurrentBook}: Sefa
       return
     }
     const {bookname, chapter} = splitBookRef(lastSection.next)
-    getBookText(bookname, chapter).then( (result) => {
+    getBookText(bookname, chapter, currentTranslation).then( (result) => {
       if (result) {
         setSections([...sections, textSectionToListSection(result)])
+        setAvailableVersions(result.versions)
       }
     })
     addLinkNames(bookname, chapter)
   }, [sections, setSections])
 
-  const jumpToLocation = (location: string) => {
+  const jumpToLocation = (location: string, translation?: string) => {
     if (!location) {
       console.warn('No location given to jumpToLocation')
       return
@@ -159,9 +174,10 @@ export function SefariaTextPage({currentBook, goToLibrary, setCurrentBook}: Sefa
     setSections([])
     const [chapter, verses] = location.split(':')
     const [firstVerse] = verses ? verses.split('-') : ['1']
-    getBookText(currentBook.slug, chapter).then((result) => {
+    getBookText(currentBook.slug, chapter, translation === undefined ? currentTranslation : translation).then((result) => {
       const section = textSectionToListSection(result)
       setSections([section])
+      setAvailableVersions(result.versions)
       let goToVerse = parseInt(firstVerse)
       if (isNaN(goToVerse)) {
         goToVerse = 0
@@ -195,16 +211,17 @@ export function SefariaTextPage({currentBook, goToLibrary, setCurrentBook}: Sefa
   // Save settings when stuff changes
   useEffect(() => {
     if (currentBook && currentItem?.key) {
-      const location = currentItem.key.replace(currentBook.slug + ' ', '')
+      const location = keyToLocation(currentItem.key)
       saveBookSettings({
         bookSlug: currentBook.slug,
         location,
         label: {en: currentItem.key, he: currentItem.hebrewRef},
         commentaries: selectedCommentaries,
         lastRead: new Date(),
+        translation: currentTranslation,
       })
     }
-  }, [currentBook?.slug, currentItem?.key, selectedCommentaries])
+  }, [currentBook?.slug, currentItem?.key, selectedCommentaries, currentTranslation])
 
   const contentsJumpAndClose = (location: string) => {
     jumpToLocation(location)
@@ -219,7 +236,7 @@ export function SefariaTextPage({currentBook, goToLibrary, setCurrentBook}: Sefa
     }
     setLoadingPrevious(true)
     const {bookname, chapter} = splitBookRef(prev)
-    getBookText(bookname, chapter).then( (result) => {
+    getBookText(bookname, chapter, currentTranslation).then( (result) => {
       if (result) {
         const newSections = textSectionToListSection(result)
         setSections([newSections, ...sections])
@@ -263,6 +280,16 @@ export function SefariaTextPage({currentBook, goToLibrary, setCurrentBook}: Sefa
     setShowTOC(false)
   }, [currentItem, sections])
 
+  const goToTranslation = (translation: string|null) => {
+    if (currentTranslation === translation) {
+      return
+    }
+    setCurrentTranslation(translation)
+    if (currentItem) {
+      jumpToLocation(keyToLocation(currentItem.key), translation)
+    }
+  }
+
   const contents = useMemo( () => {
     return (
       <BookContents jumpAndClose={contentsJumpAndClose} index={index} />
@@ -275,11 +302,19 @@ export function SefariaTextPage({currentBook, goToLibrary, setCurrentBook}: Sefa
         {contents}
       </PersistentModal>
       <SeferHistory loadBook={goToBook} visible={showingHistory} onClose={hideHistory} />
+      <SelectTranslation
+        visible={showingTranslations}
+        availableTranslations={availableVersions}
+        onClose={()=>setShowingTranslations(false)}
+        curentTranslation={currentTranslation}
+        setCurrentTranslation={goToTranslation}
+      />
       <View style={textPageStyles.topContainer}>
         <View style={globalStyles.pageHeaderContainer}>
           <LibraryButton onPress={goToLibrary} />
           <Text style={globalStyles.pageHeaderText}>{currentItem?.hebrewRef || currentItem?.key || currentBook.title.he || currentBook.title.en}</Text>
           <View style={globalStyles.headerButtonBox}>
+            <TranslationButton onPress={()=>setShowingTranslations(true)}/>
             <HistoryButton onPress={showHistory} />
             <MaterialIcons name="toc" size={topButtonSize} color="black" onPress={() => setShowTOC(!showTOC)} />
           </View>

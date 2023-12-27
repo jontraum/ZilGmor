@@ -97,3 +97,48 @@ export interface BookIndex {
     exclude_structs?: string[];
 }
 
+/** Information about different text versions, including translations */
+export interface TextVersion {
+    /** Is this a version of the original text, as opposed to a translation or other derived text */
+    isBaseText: boolean
+    /** In Sefaria's API, Language is always 'en' for any version or translation that is rendered in Latin characters (even if the actual language is, eg, French or German), and 'he' for languages rendered in Hebrew characters (e.g. Yiddish)*/
+    language: string
+    /** The legal license under which this version is made available, usually some form of Creative Commons license */
+    license: string 
+    priority?: number
+    purchaseInformationImage?: string,
+    purchaseInformationURL?: string,
+    shortVersionTitle?: string,
+    shortVersionTitleInHebrew?: string
+    /** Title of the main book (not of the translation or version. See versionTitle for that.) */
+    title: string
+    versionNotes: string
+    versionNotesInHebrew: string
+    /** URL of where to get this version from, or at least info about it */
+    versionSource: string
+    versionTitle: string
+    versionTitleInHebrew: string
+}
+
+export interface BookText {
+  /** Title of the section (gemara daf, tanach chapter, etc.) */
+  title: string
+  heTitle: string
+  /** how the section is referenced when fetching it. Format is something like "title.section" */
+  sectionRef: string
+  heSectionRef: string
+  /** Section identifier without the book title. Could be chapter number in most cases, but for Gemara it's the Amud (e.g. '13a')
+   * It is an array because in theory we could have requested multiple chapters/amudim/section in one request.
+   */
+  sections: Array<string | number>
+  /** Array of Hebrew verses in the chapter */
+  he: string[]
+  /** Array of English verses in the chapter. */
+  text: string[]
+  /** Identifier of the next chapter/amud/etc */
+  next: string | null
+  /** Identifier of the previous chapter/amud */
+  prev: string | null
+  versions: TextVersion[]
+}
+

@@ -25,7 +25,7 @@ export const globalStyles = StyleSheet.create({
   headerButtonBox: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    columnGap: 8,
+    columnGap: 9,
   },
   bookButton: {
     fontSize: 20,

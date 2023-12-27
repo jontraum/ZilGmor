@@ -7,6 +7,7 @@ export interface BookSettings {
   label: Title | null; // Label to use when showing history
   commentaries: string[]; // List of commentaries currently being used with the book.
   lastRead?: Date; // When the user last read the book
+  translation?: string; // The translation selected by the user
 }
 
 const settingsDBName = 'zilgmor.settings'
@@ -20,7 +21,8 @@ const bookSettingsCreateSQL = `CREATE TABLE IF NOT EXISTS book_settings (
   location TEXT,
   label TEXT,
   commentaries TEXT,
-  last_read NUMERIC
+  last_read NUMERIC,
+  translation TEXT
   );`
 
 const bookSettingsCreateIndexSQL = 'create index if not exists settings_bookslug_index on book_settings(book_slug);'
@@ -35,6 +37,14 @@ export async function initializeDB() {
     (error) => { console.log('db error creating tables'); console.log(error); reject(error) },
     () => { resolve('success') },
     )
+  })
+}
+
+function addTranslationColumn() {
+  db.transaction(tx => {
+    tx.executeSql('ALTER TABLE book_settings ADD COLUMN translation TEXT')
+  }, (err) => {
+    console.log('Could not add translation column', err)
   })
 }
 
@@ -54,6 +64,7 @@ function rowToBookSettings(row) : BookSettings {
     commentaries: (row.commentaries as string).split('\t'),
     label: label,
     lastRead: new Date(row.last_read as number),
+    translation: row.translation as string,
   }
   return retval
 }
@@ -83,17 +94,26 @@ export function getBookSettings(bookSlug: string) : Promise<BookSettings | null 
 
 export function saveBookSettings(settings: BookSettings) {
   const titleJSON = JSON.stringify(settings.label)
-  const values = [settings.location, titleJSON, settings.commentaries.join('\t'), settings.lastRead.getTime(), settings.bookSlug]
+  const values = [settings.location, titleJSON, settings.commentaries.join('\t'), settings.lastRead.getTime(), settings.translation, settings.bookSlug]
   return db.transactionAsync(tx =>{
-    return tx.executeSqlAsync('update book_settings set location = ?, label = ?, commentaries = ?, last_read = ? where book_slug = ?',
+    return tx.executeSqlAsync('update book_settings set location = ?, label = ?, commentaries = ?, last_read = ?, translation=? where book_slug = ?',
       values,
     ).then(result => {
       if(result.rowsAffected < 1) {
         // No rows updated. Must mean we need to insert
-        tx.executeSqlAsync('insert into book_settings(location, label, commentaries, last_read, book_slug) values (?, ?, ?, ?, ?)', values)
+        tx.executeSqlAsync('insert into book_settings(location, label, commentaries, last_read, translation, book_slug) values (?, ?, ?, ?, ?, ?)', values)
       }
     })
   })
+    .catch((err: Error) => {
+      if (err.message.includes('no such column: translation')) {
+        console.info('Need to add translation column!')
+        addTranslationColumn()
+      }
+      else {
+        console.warn(`Error ${typeof err.message}`, err.message, `json is "${JSON.stringify(err.message)}"`)
+      }
+    })
 }
 
 export function getHistory() : Promise<BookSettings[]> {
