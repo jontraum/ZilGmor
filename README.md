@@ -9,6 +9,7 @@ Yes there is. You can find it in the Goole Play and Apple app stores. It is very
   - The list of previous texts you've studied is easer to get to (just one button click) and easier to use (one listing per text instead of listing each and every verse you've read)
   - The Library page (i.e. the list of available texts) is easy to get to (again, just one button click) and easier to scroll through to find the text you're looking for
 - Remember not only where you left of on a text, but which commentaries and other links (e.g quotations from other texts) you were using last time
+- Sefaria offers multiple translations for many of their texts. ZilGmor makes it easier to find and change translations.
 - Sefaria's text layout has H U M O N G O U S margins which make inefficent use of small screens. ZilGmor uses the limited space more effectively to display more text at at a time
 - Sefaria loads rather slowly, not only when initializing the app, but also when loading a book. ZilGmor is much faster
 
