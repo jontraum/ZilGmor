@@ -314,8 +314,8 @@ export function SefariaTextPage({currentBook, goToLibrary, setCurrentBook}: Sefa
           <LibraryButton onPress={goToLibrary} />
           <Text style={globalStyles.pageHeaderText}>{currentItem?.hebrewRef || currentItem?.key || currentBook.title.he || currentBook.title.en}</Text>
           <View style={globalStyles.headerButtonBox}>
-            <TranslationButton onPress={()=>setShowingTranslations(true)}/>
             <HistoryButton onPress={showHistory} />
+            <TranslationButton onPress={()=>setShowingTranslations(true)}/>
             <MaterialIcons name="toc" size={topButtonSize} color="black" onPress={() => setShowTOC(!showTOC)} />
           </View>
         </View>

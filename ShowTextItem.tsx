@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   selected: {
     borderTopWidth: 2,
     borderBottomWidth: 2,
-    backgroundColor: '#c7e2e2',
+    backgroundColor: '#dcf2f2',
     borderColor: '#28f',
   },
   english: {
