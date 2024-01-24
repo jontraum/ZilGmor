@@ -80,7 +80,7 @@ export const mishnah: BookInfo[] = [
   { title: { he: 'שקלימ', en: 'Shekalim' }, slug: 'Mishnah Shekalim' },
   { title: { he: 'יומא', en: 'Yoma' }, slug: 'Mishnah Yoma' },
   { title: { he: 'סוכה', en: 'Sukkah' }, slug: 'Mishnah Sukkah' },
-  { title: { he: 'ביצה', en: 'Beitza' }, slug: 'Mishnah Beitza' },
+  { title: { he: 'ביצה', en: 'Beitza' }, slug: 'Mishnah Beitzah' },
   {
     title: {
       he: 'ראש השנה',
@@ -152,7 +152,7 @@ export const bavli: BookInfo[] = [
   { title: { he: 'פסחים', en: 'Pesachim' }, slug: 'Pesachim' },
   { title: { he: 'יומא', en: 'Yoma' }, slug: 'Yoma' },
   { title: { he: 'סוכה', en: 'Sukkah' }, slug: 'Sukkah' },
-  { title: { he: 'ביצה', en: 'Beitza' }, slug: 'Beitza' },
+  { title: { he: 'ביצה', en: 'Beitza' }, slug: 'Beitzah' },
   {
     title: {
       he: 'ראש השנה',
