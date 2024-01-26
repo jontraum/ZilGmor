@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Dimensions, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import RenderHtml from 'react-native-render-html'
@@ -92,16 +92,21 @@ const styles = StyleSheet.create({
 
 export function Commentary({verseKey, bookLinks, selectedCommentaries, setSelectedCommentaries}: CommentaryProps) {
   const [linkMap, setLinkMap] = useState<LinkMap>()
-  // Temporarily defaulting commentary to Rashi.
   const [currentCommentary, setCurrentCommentary] = useState<string>(selectedCommentaries[0])
-
   const [selectingLinks, setSelectingLinks] = useState<boolean>(false)
-
   const dimensions = useWindowDimensions()
+  const verseRef = useRef<string>(verseKey)
 
   useEffect( () => {
+    // Prevent race condition when we move verses
+    const localVerseKey = verseKey
+    verseRef.current = verseKey
     GetLinks(verseKey)
       .then(result => {
+        if (localVerseKey !== verseRef.current) {
+          //console.debug(`Discarding old request ${localVerseKey} because we now want ${verseRef.current}`)
+          return
+        }
         if (result) {
           setLinkMap(result)
         } else {

@@ -263,6 +263,7 @@ export function SefariaTextPage({currentBook, goToLibrary, setCurrentBook}: Sefa
     // Probably this is an oversight by the React Native folks. In any case, our code currently
     // only ever jumps to sectionIndex 0, so we are ok for now.
     setTimeout(() => {
+      // Setting a timeout to allow the UI to catch up
       contentListRef.current?.scrollToLocation({
         animated: true,
         itemIndex: failInfo.index,
